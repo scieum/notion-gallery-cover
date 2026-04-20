@@ -54,7 +54,6 @@ export async function GET(req: NextRequest) {
     workspaceName: data.workspace_name,
     workspaceIcon: data.workspace_icon,
     botId: data.bot_id,
-    source: 'oauth',
   });
 
   return NextResponse.redirect(new URL('/', req.url));
