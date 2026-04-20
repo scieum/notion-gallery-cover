@@ -1,0 +1,158 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Notion-inspired design tokens */
+    --ngc-bg: #ffffff;
+    --ngc-bg-warm: #f6f5f4;
+    --ngc-fg: rgba(0, 0, 0, 0.95);
+    --ngc-fg-muted: #615d59;
+    --ngc-fg-faint: #a39e98;
+    --ngc-accent: #171717; /* Notion Blue (near-black accent) */
+    --ngc-accent-pressed: #005bab;
+    --ngc-focus: #097fe8;
+    --ngc-border: rgba(0, 0, 0, 0.1);
+    --ngc-badge-bg: #f2f9ff;
+    --ngc-badge-fg: #097fe8;
+    --ngc-shadow-card: rgba(0, 0, 0, 0.04) 0px 4px 18px,
+      rgba(0, 0, 0, 0.027) 0px 2.025px 7.84688px,
+      rgba(0, 0, 0, 0.02) 0px 0.8px 2.925px,
+      rgba(0, 0, 0, 0.01) 0px 0.175px 1.04062px;
+  }
+
+  html,
+  body {
+    background: var(--ngc-bg);
+    color: var(--ngc-fg);
+    font-feature-settings: 'lnum', 'locl';
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    font-family:
+      'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont,
+      'Apple SD Gothic Neo', 'Noto Sans KR', Inter, 'Segoe UI', Helvetica,
+      Arial, sans-serif;
+  }
+
+  *:focus-visible {
+    outline: 2px solid var(--ngc-focus);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .ngc-card {
+    background: #ffffff;
+    border: 1px solid var(--ngc-border);
+    border-radius: 12px;
+  }
+  .ngc-card-hoverable {
+    transition: box-shadow 120ms ease;
+  }
+  .ngc-card-hoverable:hover {
+    box-shadow: var(--ngc-shadow-card);
+  }
+  .ngc-whisper {
+    border: 1px solid var(--ngc-border);
+  }
+  .ngc-btn-primary {
+    background: var(--ngc-accent);
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 15px;
+    line-height: 1.33;
+    transition: transform 80ms ease, background 120ms ease;
+  }
+  .ngc-btn-primary:hover {
+    background: var(--ngc-accent-pressed);
+  }
+  .ngc-btn-primary:active {
+    transform: scale(0.97);
+  }
+  .ngc-btn-primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .ngc-btn-secondary {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--ngc-fg);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 15px;
+    line-height: 1.33;
+    transition: transform 80ms ease, background 120ms ease;
+  }
+  .ngc-btn-secondary:hover {
+    background: rgba(0, 0, 0, 0.08);
+  }
+  .ngc-btn-secondary:active {
+    transform: scale(0.97);
+  }
+  .ngc-btn-ghost {
+    background: transparent;
+    color: var(--ngc-fg);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 14px;
+  }
+  .ngc-btn-ghost:hover {
+    background: rgba(0, 0, 0, 0.04);
+  }
+  .ngc-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid var(--ngc-border);
+    padding: 8px 0;
+    font-size: 15px;
+    color: var(--ngc-fg);
+    outline: none;
+    border-radius: 0;
+  }
+  .ngc-input::placeholder {
+    color: var(--ngc-fg-faint);
+  }
+  .ngc-input:focus {
+    border-bottom-color: var(--ngc-accent);
+  }
+  .ngc-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    background: var(--ngc-badge-bg);
+    color: var(--ngc-badge-fg);
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.125px;
+    line-height: 1.33;
+  }
+  .ngc-display {
+    font-size: 40px;
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -1px;
+  }
+  .ngc-h2 {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.27;
+    letter-spacing: -0.25px;
+  }
+  .ngc-caption {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--ngc-fg-muted);
+    line-height: 1.45;
+  }
+  .ngc-section-warm {
+    background: var(--ngc-bg-warm);
+  }
+}

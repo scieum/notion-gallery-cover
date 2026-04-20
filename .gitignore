@@ -1,0 +1,14 @@
+node_modules
+.next
+.env
+.env.local
+.DS_Store
+next-env.d.ts
+public/fonts/*.ttf
+public/fonts/*.otf
+public/fonts/*.woff
+public/fonts/*.woff2
+
+# Claude Code local state
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
