@@ -64,9 +64,14 @@ export default function PageList({
         </thead>
         <tbody>
           {pages.map((p) => {
-            const chosenId = perPageDesign[p.id] ?? defaultDesign?.id;
-            const chosen =
-              chosenId ? allDesigns.find((d) => d.id === chosenId) ?? defaultDesign : defaultDesign;
+            // If a per-page design override is set, look that one up in
+            // allDesigns. Otherwise use defaultDesign as-is — it already
+            // carries the inline tweak overrides from the parent. (Looking
+            // it up by id here would silently strip those overrides.)
+            const perPageId = perPageDesign[p.id];
+            const chosen = perPageId
+              ? allDesigns.find((d) => d.id === perPageId) ?? defaultDesign
+              : defaultDesign;
             const res = results[p.id];
             return (
               <tr key={p.id} className="border-t border-[var(--ngc-border)] align-middle">

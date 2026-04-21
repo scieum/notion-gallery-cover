@@ -81,7 +81,10 @@ export default function DesignGallery({
         </div>
       )}
 
-      <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
+      <div
+        className="grid gap-3"
+        style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))' }}
+      >
         {items.map((d) => {
           const isSelected = d.id === selectedId;
           return (
@@ -90,18 +93,16 @@ export default function DesignGallery({
                 onClick={() => onSelect(d)}
                 className={
                   'block w-full text-left transition-shadow ' +
-                  (isSelected ? 'ring-2 ring-[var(--ngc-accent)] rounded-[14px]' : '')
+                  (isSelected ? 'ring-2 ring-[var(--ngc-accent)] rounded-[10px]' : '')
                 }
-                style={{ borderRadius: 14 }}
+                style={{ borderRadius: 10 }}
               >
                 <CoverPreview design={d} name={sampleName} ratio={previewRatio} />
-                <div className="mt-2 flex items-center justify-between gap-2">
-                  <div className="text-[13px] font-medium truncate">{d.label}</div>
-                  {isSelected && (
-                    <span className="ngc-badge inline-flex items-center gap-1">
-                      <Check size={12} /> 선택됨
-                    </span>
-                  )}
+                <div className="mt-1.5 flex items-center justify-between gap-1.5">
+                  <div className="text-[12px] font-medium truncate text-[var(--ngc-fg-muted)]">
+                    {d.label}
+                  </div>
+                  {isSelected && <Check size={12} className="shrink-0" />}
                 </div>
               </button>
               {d.category === 'custom' && (

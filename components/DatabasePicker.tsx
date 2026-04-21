@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Database, RefreshCw, Plus } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Database, RefreshCw, Plus, X, EyeOff } from 'lucide-react';
 
 interface Item {
   id: string;
@@ -14,10 +14,47 @@ interface Props {
   onPick: (db: Item) => void;
 }
 
+const HIDDEN_KEY = 'ngc:hidden-dbs:v1';
+
 export default function DatabasePicker({ onPick }: Props) {
   const [items, setItems] = useState<Item[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
+  const [showHidden, setShowHidden] = useState(false);
+
+  // Load hide list from localStorage on mount.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(HIDDEN_KEY);
+      if (raw) setHiddenIds(new Set(JSON.parse(raw)));
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  function persistHidden(next: Set<string>) {
+    setHiddenIds(next);
+    try {
+      localStorage.setItem(HIDDEN_KEY, JSON.stringify(Array.from(next)));
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function hide(id: string) {
+    const next = new Set(hiddenIds);
+    next.add(id);
+    persistHidden(next);
+  }
+  function unhide(id: string) {
+    const next = new Set(hiddenIds);
+    next.delete(id);
+    persistHidden(next);
+  }
+  function unhideAll() {
+    persistHidden(new Set());
+  }
 
   async function load() {
     setLoading(true);
@@ -37,6 +74,13 @@ export default function DatabasePicker({ onPick }: Props) {
   useEffect(() => {
     load();
   }, []);
+
+  const visibleItems = useMemo(() => {
+    if (!items) return null;
+    return showHidden ? items : items.filter((i) => !hiddenIds.has(i.id));
+  }, [items, hiddenIds, showHidden]);
+
+  const hiddenCount = items ? items.filter((i) => hiddenIds.has(i.id)).length : 0;
 
   return (
     <div>
@@ -72,42 +116,91 @@ export default function DatabasePicker({ onPick }: Props) {
         </div>
       )}
 
-      {items && items.length === 0 && (
+      {visibleItems && visibleItems.length === 0 && (
         <div className="ngc-card p-6">
           <div className="text-[15px] font-semibold mb-1">접근 가능한 데이터베이스가 없습니다</div>
           <div className="ngc-caption mb-4">
-            Notion 인증 화면에서 <strong>데이터베이스 자체</strong> 또는 <strong>데이터베이스를 포함한 페이지</strong>를 선택해야 보입니다. 일반 페이지만 선택하면 여기에 아무것도 안 떠요.
+            Notion 인증 화면에서 <strong>데이터베이스 자체</strong> 또는{' '}
+            <strong>데이터베이스를 포함한 페이지</strong>를 선택해야 보입니다. 일반 페이지만 선택하면
+            여기에 아무것도 안 떠요.
           </div>
-          <a
-            href="/api/auth/login"
-            className="ngc-btn-primary inline-flex items-center gap-2"
-          >
+          <a href="/api/auth/login" className="ngc-btn-primary inline-flex items-center gap-2">
             <Plus size={16} /> 다시 선택해서 추가
           </a>
         </div>
       )}
 
-      {items && items.length > 0 && (
+      {visibleItems && visibleItems.length > 0 && (
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {items.map((it) => (
-            <button
-              key={it.id}
-              onClick={() => onPick(it)}
-              className="ngc-card ngc-card-hoverable p-4 text-left flex items-start gap-3"
-            >
-              <div className="shrink-0 w-8 h-8 rounded-md flex items-center justify-center ngc-section-warm text-[18px]">
-                {it.icon && !it.icon.startsWith('http') ? (
-                  <span>{it.icon}</span>
+          {visibleItems.map((it) => {
+            const isHidden = hiddenIds.has(it.id);
+            return (
+              <div key={it.id} className="relative group">
+                <button
+                  onClick={() => onPick(it)}
+                  className={
+                    'ngc-card ngc-card-hoverable p-4 text-left flex items-start gap-3 w-full ' +
+                    (isHidden ? 'opacity-50' : '')
+                  }
+                >
+                  <div className="shrink-0 w-8 h-8 rounded-md flex items-center justify-center ngc-section-warm text-[18px]">
+                    {it.icon && !it.icon.startsWith('http') ? (
+                      <span>{it.icon}</span>
+                    ) : (
+                      <Database size={16} />
+                    )}
+                  </div>
+                  <div className="min-w-0 pr-6">
+                    <div className="text-[15px] font-semibold truncate">{it.title}</div>
+                    <div className="ngc-caption truncate">{it.id}</div>
+                  </div>
+                </button>
+                {isHidden ? (
+                  <button
+                    type="button"
+                    onClick={() => unhide(it.id)}
+                    className="absolute top-2 right-2 px-2 py-1 rounded-md bg-white/95 backdrop-blur border border-[var(--ngc-border)] text-[12px] opacity-0 group-hover:opacity-100 transition-opacity"
+                    aria-label="다시 표시"
+                    title="목록에 다시 표시"
+                  >
+                    되돌리기
+                  </button>
                 ) : (
-                  <Database size={16} />
+                  <button
+                    type="button"
+                    onClick={() => hide(it.id)}
+                    className="absolute top-2 right-2 p-1.5 rounded-md bg-white/95 backdrop-blur border border-[var(--ngc-border)] opacity-0 group-hover:opacity-100 transition-opacity"
+                    aria-label="목록에서 숨기기"
+                    title="이 데이터베이스를 목록에서 숨기기"
+                  >
+                    <X size={14} />
+                  </button>
                 )}
               </div>
-              <div className="min-w-0">
-                <div className="text-[15px] font-semibold truncate">{it.title}</div>
-                <div className="ngc-caption truncate">{it.id}</div>
-              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {hiddenCount > 0 && (
+        <div className="mt-4 flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setShowHidden((v) => !v)}
+            className="ngc-btn-ghost inline-flex items-center gap-1.5 text-[13px]"
+          >
+            <EyeOff size={14} />
+            {showHidden ? `숨긴 DB 다시 가리기` : `숨긴 DB ${hiddenCount}개 보기`}
+          </button>
+          {showHidden && (
+            <button
+              type="button"
+              onClick={unhideAll}
+              className="ngc-btn-ghost text-[13px]"
+            >
+              전체 복구
             </button>
-          ))}
+          )}
         </div>
       )}
     </div>
