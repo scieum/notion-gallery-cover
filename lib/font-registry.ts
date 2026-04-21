@@ -205,13 +205,10 @@ export const FONT_REGISTRY: Record<string, FontDef> = {
       400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2307-2@1.0/HakgyoansimBunpilR.woff2',
     },
   },
-  dovemayo: {
-    family: 'DoolgiMayoGothic',
-    label: '둘기마요 고딕',
-    weights: {
-      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302@1.1/Dovemayo_gothic.woff2',
-    },
-  },
+  // 둘기마요 고딕 — disabled. Same failure mode as Paperozi: the WOFF2
+  // decompresses cleanly but satori errors when parsing the resulting TTF.
+  // Other projectnoonnu woff2 fonts work fine, so this seems to be a per-
+  // font issue rather than a wawoff2/satori pipeline bug.
   jejudoldam: {
     family: 'JejuStoneWall',
     label: '제주 돌담체',
