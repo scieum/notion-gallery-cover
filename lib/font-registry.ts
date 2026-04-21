@@ -216,6 +216,110 @@ export const FONT_REGISTRY: Record<string, FontDef> = {
       400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2210-EF@1.0/EF_jejudoldam.woff2',
     },
   },
+  monaemoji: {
+    family: 'Mona12emoji',
+    label: 'Mona 12 이모지',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/2603-1@1.0/Mona12Emoji.woff2',
+    },
+  },
+  ria: {
+    family: 'Ria',
+    label: '리아 산스 (ExtraBold)',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/2410-1@1.0/RiaSans-ExtraBold.woff2',
+    },
+  },
+  yidstreet: {
+    family: 'Yidstreet',
+    label: '이드스트리트체',
+    weights: {
+      300: 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2110@1.0/YdestreetL.woff2',
+      700: 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2110@1.0/YdestreetB.woff2',
+    },
+  },
+  kotrabold: {
+    family: 'KotraBold',
+    label: 'KOTRA 볼드',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-10-21@1.1/KOTRA_BOLD-Bold.woff',
+    },
+  },
+  kotrahope: {
+    family: 'KotraHope',
+    label: 'KOTRA HOPE',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2110@1.0/KOTRAHOPE.woff2',
+    },
+  },
+  gyeonggititle: {
+    family: 'GyeonggiMillenniumTitle',
+    label: '경기천년 제목체',
+    weights: {
+      300: 'https://cdn.jsdelivr.net/gh/projectnoonnu/2410-3@1.0/Title_Light.woff',
+      500: 'https://cdn.jsdelivr.net/gh/projectnoonnu/2410-3@1.0/Title_Medium.woff',
+      700: 'https://cdn.jsdelivr.net/gh/projectnoonnu/2410-3@1.0/Title_Bold.woff',
+      800: 'https://cdn.jsdelivr.net/gh/projectnoonnu/2410-3@1.0/TitleV.woff',
+    },
+  },
+  gyeonggibatang: {
+    family: 'GyeonggiMillenniumBackground',
+    label: '경기천년 바탕체',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/2410-3@1.0/Batang_Regular.woff',
+      700: 'https://cdn.jsdelivr.net/gh/projectnoonnu/2410-3@1.0/Batang_Bold.woff',
+    },
+  },
+  gangwonsaeum: {
+    family: 'GangwonEducationSaeum',
+    label: '강원교육새음체',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/GangwonEduSaeeum_OTFMediumA.woff',
+    },
+  },
+  beloved: {
+    family: 'BelovedMyoeunttobak',
+    label: '그리운 묘은또박',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/2601-1@1.0/Griun_Myoeunddobak-Rg.woff2',
+    },
+  },
+  nostalgicheullim: {
+    family: 'NostalgicMyoeunHeullim',
+    label: '그리운 묘은흘림',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/2601-1@1.0/Griun_MyoeunHeullim-Rg.woff2',
+    },
+  },
+  ssukssuk: {
+    family: 'Cafe24Ssukssuk',
+    label: 'Cafe24 쑥쑥체',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.1/Cafe24Ssukssuk.woff',
+    },
+  },
+  freesentation: {
+    family: 'Presentation',
+    // 9 weights available — registering 400/700/800 keeps cold-start fetches
+    // light while still covering body / bold / extrabold use cases.
+    label: 'Freesentation (자유의 소리)',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/2404@1.0/Freesentation-4Regular.woff2',
+      700: 'https://cdn.jsdelivr.net/gh/projectnoonnu/2404@1.0/Freesentation-7Bold.woff2',
+      800: 'https://cdn.jsdelivr.net/gh/projectnoonnu/2404@1.0/Freesentation-8ExtraBold.woff2',
+    },
+  },
+  notosans: {
+    family: 'Noto Sans KR',
+    label: '노토 산스 KR',
+    // Direct TTF from gstatic — no woff2 decode step needed. Keeping just
+    // 400/700/800 to bound cold-start fetch size.
+    weights: {
+      400: 'https://fonts.gstatic.com/s/notosanskr/v39/PbyxFmXiEBPT4ITbgNA5Cgms3VYcOA-vvnIzzuoySLPg9A.ttf',
+      700: 'https://fonts.gstatic.com/s/notosanskr/v39/PbyxFmXiEBPT4ITbgNA5Cgms3VYcOA-vvnIzzg01SLPg9A.ttf',
+      800: 'https://fonts.gstatic.com/s/notosanskr/v39/PbyxFmXiEBPT4ITbgNA5Cgms3VYcOA-vvnIzzmo1SLPg9A.ttf',
+    },
+  },
   // Mona pixel font removed — server returns a 200 PNG but the image
   // turns out broken in browser (likely a satori/opentype pixel-font
   // glyph issue at our render sizes). Revisit if a clean Korean-capable
