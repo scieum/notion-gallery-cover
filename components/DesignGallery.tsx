@@ -19,6 +19,7 @@ interface Props {
 
 const TABS: { id: DesignCategory | 'all'; label: string }[] = [
   { id: 'all', label: '전체' },
+  { id: 'image', label: '이미지' },
   { id: 'solid', label: '단색' },
   { id: 'gradient', label: '그라데이션' },
   { id: 'pattern', label: '패턴' },

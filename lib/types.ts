@@ -1,4 +1,4 @@
-export type CoverStyle = 'solid' | 'gradient' | 'pattern' | 'emoji';
+export type CoverStyle = 'solid' | 'gradient' | 'pattern' | 'emoji' | 'image';
 export type PatternName = 'dots' | 'lines' | 'grid' | 'waves' | 'circles';
 export type EmojiLayout = 'side' | 'stack';
 export type Align = 'left' | 'center';
@@ -40,6 +40,8 @@ export interface CoverParams {
   italic?: boolean;
   /** Font weight (100..900). Subtitle/caption auto-step down from this. */
   weight?: number;
+  /** Preset background image key (matches public/covers/{bgImage}.png). */
+  bgImage?: string;
 }
 
 /** Which Notion property feeds each title slot on a cover. `null` = unused. */
@@ -55,7 +57,7 @@ export interface PropertyMeta {
   type: string;
 }
 
-export type DesignCategory = 'solid' | 'gradient' | 'pattern' | 'emoji' | 'custom';
+export type DesignCategory = 'image' | 'solid' | 'gradient' | 'pattern' | 'emoji' | 'custom';
 
 export interface Design {
   id: string;

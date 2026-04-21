@@ -48,7 +48,38 @@ const emojiBases: Array<{ id: string; bg: string; fg: string }> = [
   { id: 'lemon', bg: '#FFF4C2', fg: '#1F1F1F' },
 ];
 
+// Curated background images — served from public/covers/{key}.png, inlined by
+// the cover route as base64 data URIs so satori can rasterize them.
+const imagePresets: Array<{ key: string; label: string; fg: string; bg: string }> = [
+  { key: '1', label: 'Ember', fg: '#ffffff', bg: '#1F1F1F' },
+  { key: '2', label: 'Haze', fg: '#ffffff', bg: '#6f7bf0' },
+  { key: '3', label: 'Mint Loop', fg: '#1F1F1F', bg: '#7be0b6' },
+  { key: '4', label: 'Chalk', fg: '#ffffff', bg: '#1F1F1F' },
+  { key: '5', label: 'Drift', fg: '#1F1F1F', bg: '#eaeef2' },
+  { key: '6', label: 'Studio', fg: '#1F1F1F', bg: '#f6f2ea' },
+  { key: '7', label: 'Sugar', fg: '#1F1F1F', bg: '#fbf2d9' },
+  { key: '8', label: 'Cobalt', fg: '#ffffff', bg: '#4a5cf2' },
+  { key: '9', label: 'Halo', fg: '#1F1F1F', bg: '#f3f1ff' },
+  { key: '10', label: 'Echo', fg: '#1F1F1F', bg: '#ffffff' },
+];
+
 export const BUILTIN_DESIGNS: Design[] = [
+  // --- Image presets (rendered first in the gallery) ---
+  ...imagePresets.map<Design>((p) => ({
+    id: `image-${p.key}`,
+    label: `Image · ${p.label}`,
+    category: 'image',
+    params: {
+      style: 'image',
+      bgImage: p.key,
+      bg: p.bg,
+      fg: p.fg,
+      align: 'left',
+      size: 96,
+    },
+  })),
+
+
   // --- Solid ---
   ...notionPalette.map<Design>((c) => ({
     id: `solid-${c.id}`,
