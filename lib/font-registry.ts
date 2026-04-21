@@ -104,6 +104,93 @@ export const FONT_REGISTRY: Record<string, FontDef> = {
       400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302@1.0/LOTTERIACHAB.woff2',
     },
   },
+  okdandan: {
+    family: 'OkDandan',
+    label: 'OK단단',
+    weights: {
+      700: 'https://cdn.jsdelivr.net/gh/projectnoonnu/2508-2@1.0/OkDanDan-Bold.woff2',
+    },
+  },
+  kbo: {
+    family: 'KboDiamondGothic',
+    label: 'KBO 다이아 고딕',
+    weights: {
+      300: 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2304-2@1.0/KBO-Dia-Gothic_light.woff',
+      500: 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2304-2@1.0/KBO-Dia-Gothic_medium.woff',
+      700: 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2304-2@1.0/KBO-Dia-Gothic_bold.woff',
+    },
+  },
+  dohyun: {
+    family: 'Dohyun',
+    label: '배민 도현체',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/BMDOHYEON.woff',
+    },
+  },
+  giranghaerang: {
+    family: 'Giranghaerang',
+    label: '배민 기랑해랑체',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/BMKIRANGHAERANG.woff',
+    },
+  },
+  hanna: {
+    family: 'Hanna',
+    label: '배민 한나체',
+    weights: {
+      400: 'https://fonts.gstatic.com/ea/hanna/v3/BM-HANNA.ttf',
+    },
+  },
+  joseon: {
+    family: 'JoseonGulim',
+    label: '조선굴림체',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-04@1.0/ChosunGu.woff',
+    },
+  },
+  eoyeonce: {
+    family: 'OngleipEoyeonce',
+    label: '온글잎 의연체',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2105@1.1/Uiyeun.woff',
+    },
+  },
+  ryuryu: {
+    family: 'OngleipRyuryu',
+    label: '온글잎 류류체',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/2405-2@1.0/Ownglyph_ryurue-Rg.woff2',
+    },
+  },
+  parkdahyun: {
+    family: 'OngleipParkDahyeon',
+    label: '온글잎 박다현체',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/2411-3@1.0/Ownglyph_ParkDaHyun.woff2',
+    },
+  },
+  bookk: {
+    family: 'BookkMyungjo',
+    label: '부크크 명조체',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302@1.0/BookkMyungjo-Lt.woff2',
+      700: 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302@1.0/BookkMyungjo-Bd.woff2',
+    },
+  },
+  yoon: {
+    family: 'YoonChoWooSan',
+    label: '윤초우산체',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/2408@1.0/YoonChildfundkoreaManSeh.woff2',
+    },
+  },
+  cafe24: {
+    family: 'Cafe24Danjeonghae',
+    label: 'Cafe24 단정해체',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.1/Cafe24Danjunghae.woff',
+    },
+  },
   // Mona pixel font removed — server returns a 200 PNG but the image
   // turns out broken in browser (likely a satori/opentype pixel-font
   // glyph issue at our render sizes). Revisit if a clean Korean-capable
