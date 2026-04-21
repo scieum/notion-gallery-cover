@@ -7,7 +7,8 @@ export function buildCoverParams(design: Design, name: string): CoverParams {
 export function coverSearchParams(params: CoverParams): URLSearchParams {
   const sp = new URLSearchParams();
   for (const [k, v] of Object.entries(params)) {
-    if (v === undefined || v === null || v === '') continue;
+    // Skip empty / unset / explicit-false so the URL stays compact.
+    if (v === undefined || v === null || v === '' || v === false) continue;
     sp.set(k, String(v));
   }
   return sp;

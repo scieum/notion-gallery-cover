@@ -34,6 +34,10 @@ export default function TweakPanel({ params, onChange, onReset }: Props) {
   const bg2 = params.bg2 ?? bg;
   const angle = params.angle ?? 135;
   const fontKey = params.font ?? 'pretendard';
+  const letterSpacing = params.letterSpacing ?? -0.02;
+  const lineHeight = params.lineHeight ?? 1.1;
+  const italic = params.italic ?? false;
+  const weight = params.weight ?? 800;
 
   return (
     <div className="ngc-soft p-6 space-y-7">
@@ -71,6 +75,71 @@ export default function TweakPanel({ params, onChange, onReset }: Props) {
           onChange={(e) => onChange({ size: Number(e.target.value) })}
           className="w-full"
         />
+      </Field>
+
+      <div className="grid grid-cols-2 gap-4">
+        <Field label={`자간 · ${letterSpacing.toFixed(2)}em`}>
+          <input
+            type="range"
+            min={-0.1}
+            max={0.2}
+            step={0.01}
+            value={letterSpacing}
+            onChange={(e) => onChange({ letterSpacing: Number(e.target.value) })}
+            className="w-full"
+          />
+        </Field>
+        <Field label={`행간 · ${lineHeight.toFixed(2)}`}>
+          <input
+            type="range"
+            min={0.9}
+            max={2}
+            step={0.05}
+            value={lineHeight}
+            onChange={(e) => onChange({ lineHeight: Number(e.target.value) })}
+            className="w-full"
+          />
+        </Field>
+      </div>
+
+      <Field label="굵기 · 기울임">
+        <div className="flex flex-wrap gap-1.5">
+          {(
+            [
+              { v: 400, label: '보통' },
+              { v: 600, label: '진하게' },
+              { v: 800, label: '매우' },
+              { v: 900, label: '블랙' },
+            ] as const
+          ).map((w) => (
+            <button
+              key={w.v}
+              type="button"
+              onClick={() => onChange({ weight: w.v })}
+              className={
+                'text-[12px] px-2.5 py-1 rounded-full font-medium ' +
+                (weight === w.v
+                  ? 'bg-[var(--ngc-accent)] text-white'
+                  : 'bg-white text-[var(--ngc-fg)] border border-[var(--ngc-border)]')
+              }
+              style={{ fontWeight: w.v }}
+            >
+              {w.label}
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={() => onChange({ italic: !italic })}
+            className={
+              'text-[12px] px-2.5 py-1 rounded-full font-medium italic ' +
+              (italic
+                ? 'bg-[var(--ngc-accent)] text-white'
+                : 'bg-white text-[var(--ngc-fg)] border border-[var(--ngc-border)]')
+            }
+          >
+            기울임
+          </button>
+        </div>
       </Field>
 
       <div className="grid grid-cols-2 gap-4">

@@ -29,6 +29,10 @@ function parse(req: NextRequest): CoverParams {
     w: num('w'),
     h: num('h'),
     font: q.get('font') ?? undefined,
+    letterSpacing: num('letterSpacing'),
+    lineHeight: num('lineHeight'),
+    italic: q.get('italic') === 'true' ? true : undefined,
+    weight: num('weight'),
   };
 }
 
@@ -86,10 +90,16 @@ export async function GET(req: NextRequest) {
   const subSize = Math.round(size * 0.55);
   const capSize = Math.round(size * 0.35);
   const stackGap = Math.round(size * 0.18);
+  const baseWeight = p.weight ?? 800;
+  const subWeight = Math.max(400, baseWeight - 100);
+  const capWeight = Math.max(400, baseWeight - 300);
+  const lineHeight = p.lineHeight ?? 1.1;
+  const letterSpacing = `${p.letterSpacing ?? -0.02}em`;
+  const fontStyle = p.italic ? 'italic' : 'normal';
   const lines: Array<{ text: string; fontSize: number; fontWeight: number }> = [];
-  if (p.name) lines.push({ text: p.name, fontSize: size, fontWeight: 800 });
-  if (p.subtitle) lines.push({ text: p.subtitle, fontSize: subSize, fontWeight: 700 });
-  if (p.caption) lines.push({ text: p.caption, fontSize: capSize, fontWeight: 500 });
+  if (p.name) lines.push({ text: p.name, fontSize: size, fontWeight: baseWeight });
+  if (p.subtitle) lines.push({ text: p.subtitle, fontSize: subSize, fontWeight: subWeight });
+  if (p.caption) lines.push({ text: p.caption, fontSize: capSize, fontWeight: capWeight });
 
   function TitleStack({ maxWidthPx }: { maxWidthPx: number }) {
     return (
@@ -109,8 +119,9 @@ export async function GET(req: NextRequest) {
             style={{
               fontSize: l.fontSize,
               fontWeight: l.fontWeight,
-              lineHeight: 1.1,
-              letterSpacing: '-0.02em',
+              lineHeight,
+              letterSpacing,
+              fontStyle,
               textAlign: 'center',
               display: 'flex',
               color: fg,

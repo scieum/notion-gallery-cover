@@ -32,6 +32,14 @@ export interface CoverParams {
   h?: number;
   /** Font registry key — see lib/fonts.ts FONT_REGISTRY. */
   font?: string;
+  /** Letter spacing in em units (e.g. -0.02 ≈ default tight headline). */
+  letterSpacing?: number;
+  /** Unit-less line height (e.g. 1.1). */
+  lineHeight?: number;
+  /** Italicize all lines. */
+  italic?: boolean;
+  /** Font weight (100..900). Subtitle/caption auto-step down from this. */
+  weight?: number;
 }
 
 /** Which Notion property feeds each title slot on a cover. `null` = unused. */
