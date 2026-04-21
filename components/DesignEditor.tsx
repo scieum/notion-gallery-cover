@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
 import type { CoverStyle, Design, PatternName } from '@/lib/types';
+import { DEFAULT_FONT_KEY, FONT_OPTIONS } from '@/lib/font-registry';
 import CoverPreview from './CoverPreview';
 
 interface Props {
@@ -26,6 +27,7 @@ export default function DesignEditor({ open, onClose, onSave, sampleName, previe
   const [pattern, setPattern] = useState<PatternName>('dots');
   const [emoji, setEmoji] = useState('✨');
   const [layout, setLayout] = useState<'side' | 'stack'>('side');
+  const [font, setFont] = useState<string>(DEFAULT_FONT_KEY);
 
   if (!open) return null;
 
@@ -44,6 +46,7 @@ export default function DesignEditor({ open, onClose, onSave, sampleName, previe
       layout: style === 'emoji' ? layout : undefined,
       align: 'left',
       size: style === 'emoji' && layout === 'stack' ? 72 : 96,
+      font,
     },
   };
 
@@ -77,9 +80,25 @@ export default function DesignEditor({ open, onClose, onSave, sampleName, previe
         <div className="p-5 space-y-5">
           <CoverPreview design={tempDesign} name={sampleName} ratio={previewRatio} />
 
-          <div>
-            <label className="ngc-caption block mb-1">이름</label>
-            <input className="ngc-input" value={label} onChange={(e) => setLabel(e.target.value)} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="ngc-caption block mb-1">이름</label>
+              <input className="ngc-input" value={label} onChange={(e) => setLabel(e.target.value)} />
+            </div>
+            <div>
+              <label className="ngc-caption block mb-1">폰트</label>
+              <select
+                className="ngc-input"
+                value={font}
+                onChange={(e) => setFont(e.target.value)}
+              >
+                {FONT_OPTIONS.map((f) => (
+                  <option key={f.key} value={f.key}>
+                    {f.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div>

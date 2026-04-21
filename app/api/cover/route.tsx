@@ -1,9 +1,10 @@
 import { ImageResponse } from '@vercel/og';
 import type { NextRequest } from 'next/server';
-import { loadFonts } from '@/lib/fonts';
+import { DEFAULT_FONT_KEY, FONT_REGISTRY, loadFontByKey } from '@/lib/fonts';
 import type { CoverParams, PatternName } from '@/lib/types';
 
-export const runtime = 'edge';
+// Node runtime so we can use wawoff2 (loads a wasm decoder for WOFF2 fonts).
+export const runtime = 'nodejs';
 
 function parse(req: NextRequest): CoverParams {
   const q = req.nextUrl.searchParams;
@@ -25,6 +26,7 @@ function parse(req: NextRequest): CoverParams {
     layout: (q.get('layout') as CoverParams['layout']) ?? undefined,
     w: num('w'),
     h: num('h'),
+    font: q.get('font') ?? undefined,
   };
 }
 
@@ -61,7 +63,9 @@ export async function GET(req: NextRequest) {
   const height = p.h ?? 600;
   const fg = p.fg ?? '#ffffff';
   const size = p.size ?? 96;
-  const fonts = await loadFonts();
+  const fontKey = p.font && FONT_REGISTRY[p.font] ? p.font : DEFAULT_FONT_KEY;
+  const fontFamily = FONT_REGISTRY[fontKey].family;
+  const fonts = await loadFontByKey(fontKey);
 
   const bg = background(p);
   const overlayStyle: Record<string, string> =
@@ -188,7 +192,7 @@ export async function GET(req: NextRequest) {
           height: '100%',
           display: 'flex',
           background: bg,
-          fontFamily: 'Pretendard',
+          fontFamily,
         }}
       >
         {body}
@@ -197,11 +201,7 @@ export async function GET(req: NextRequest) {
     {
       width,
       height,
-      fonts: [
-        { name: 'Pretendard', data: fonts.regular, style: 'normal', weight: 400 },
-        { name: 'Pretendard', data: fonts.bold, style: 'normal', weight: 700 },
-        { name: 'Pretendard', data: fonts.extrabold, style: 'normal', weight: 800 },
-      ],
+      fonts: fonts as any,
       headers: {
         'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400',
       },

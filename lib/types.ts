@@ -25,6 +25,8 @@ export interface CoverParams {
   layout?: EmojiLayout;
   w?: number;
   h?: number;
+  /** Font registry key — see lib/fonts.ts FONT_REGISTRY. */
+  font?: string;
 }
 
 export type DesignCategory = 'solid' | 'gradient' | 'pattern' | 'emoji' | 'custom';
