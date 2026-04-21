@@ -189,8 +189,10 @@ export default function Page() {
   }, [defaultDesignId]);
 
   function pickDesign(d: Design) {
+    // Keep the user's typography overrides (font, size, fg, weight, etc.)
+    // when switching presets — only the underlying bg/style changes.
+    // The "되돌리기" button in TweakPanel is the explicit way to reset.
     setDefaultDesignId(d.id);
-    setOverrides({}); // overrides belong to the previous design; start fresh
   }
 
   async function logout() {
