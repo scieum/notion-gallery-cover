@@ -174,7 +174,11 @@ export default function Page() {
       const res = await fetch('/api/notion/apply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items }),
+        body: JSON.stringify({
+          items,
+          mode: coverMode,
+          databaseId: db?.id,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error ?? 'Apply failed');
