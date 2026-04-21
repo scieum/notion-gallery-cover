@@ -104,14 +104,10 @@ export const FONT_REGISTRY: Record<string, FontDef> = {
       400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302@1.0/LOTTERIACHAB.woff2',
     },
   },
-  mona: {
-    family: 'Mona12',
-    label: 'Mona (픽셀)',
-    weights: {
-      400: 'https://cdn.jsdelivr.net/gh/MonadABXY/mona-font/web/Mona12.woff2',
-      700: 'https://cdn.jsdelivr.net/gh/MonadABXY/mona-font/web/Mona12-Bold.woff2',
-    },
-  },
+  // Mona pixel font removed — server returns a 200 PNG but the image
+  // turns out broken in browser (likely a satori/opentype pixel-font
+  // glyph issue at our render sizes). Revisit if a clean Korean-capable
+  // pixel font shows up.
 };
 
 /** UI helper — list of { key, label, family } for a <select>. */

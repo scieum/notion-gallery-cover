@@ -56,9 +56,9 @@ export default function Page() {
   const [perPageDesign, setPerPageDesign] = useState<Record<string, string | undefined>>({});
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
-  const [coverMode, setCoverMode] = useState<CoverMode>('page');
+  const [coverMode, setCoverMode] = useState<CoverMode>('gallery');
   const [applying, setApplying] = useState(false);
-  const [autoApply, setAutoApply] = useState(true);
+  const [autoApply, setAutoApply] = useState(false);
   const [lastAutoAt, setLastAutoAt] = useState<number | null>(null);
   const [results, setResults] = useState<Record<string, { ok: boolean; error?: string }>>({});
   const lastAppliedRef = useRef<string>('');
@@ -208,9 +208,17 @@ export default function Page() {
       return next;
     });
   }
-  function toggleAll(checked: boolean) {
-    if (!pages) return;
-    setSelected(new Set(checked ? pages.map((p) => p.id) : []));
+  /**
+   * Add or remove a specific set of page ids from the selection. Pre-filter
+   * decides which ids are visible; "전체 선택" only affects those.
+   */
+  function toggleAll(checked: boolean, ids: string[]) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (checked) ids.forEach((id) => next.add(id));
+      else ids.forEach((id) => next.delete(id));
+      return next;
+    });
   }
 
   function buildItems() {
@@ -367,7 +375,7 @@ export default function Page() {
                   role="group"
                   aria-label="커버 종류"
                 >
-                  {(['page', 'gallery'] as CoverMode[]).map((m) => (
+                  {(['gallery', 'page'] as CoverMode[]).map((m) => (
                     <button
                       key={m}
                       type="button"

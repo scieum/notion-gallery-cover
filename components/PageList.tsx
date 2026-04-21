@@ -1,14 +1,18 @@
 'use client';
 
+import { useMemo, useState } from 'react';
 import { ExternalLink, Image as ImageIcon } from 'lucide-react';
 import type { Design, NotionPageLite } from '@/lib/types';
 import CoverPreview from './CoverPreview';
+
+type CoverFilter = 'all' | 'with' | 'without';
 
 interface Props {
   pages: NotionPageLite[];
   selected: Set<string>;
   onToggle: (id: string) => void;
-  onToggleAll: (checked: boolean) => void;
+  /** Receives the list of currently-visible (filtered) page ids. */
+  onToggleAll: (checked: boolean, ids: string[]) => void;
   perPageDesign: Record<string, string | undefined>;
   onPickDesignForPage: (pageId: string, designId: string | null) => void;
   defaultDesign: Design | null;
@@ -35,24 +39,69 @@ export default function PageList({
   previewRatio,
   pageTexts,
 }: Props) {
-  const allChecked = pages.length > 0 && pages.every((p) => selected.has(p.id));
+  const [coverFilter, setCoverFilter] = useState<CoverFilter>('all');
+
+  const filteredPages = useMemo(() => {
+    if (coverFilter === 'with') return pages.filter((p) => !!p.currentCoverUrl);
+    if (coverFilter === 'without') return pages.filter((p) => !p.currentCoverUrl);
+    return pages;
+  }, [pages, coverFilter]);
+
+  // "전체 선택" toggles selection for whatever is currently visible.
+  const allChecked =
+    filteredPages.length > 0 && filteredPages.every((p) => selected.has(p.id));
+
+  const withCount = useMemo(() => pages.filter((p) => !!p.currentCoverUrl).length, [pages]);
+  const withoutCount = pages.length - withCount;
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex items-center justify-between mb-5 gap-4 flex-wrap">
         <div>
           <div className="ngc-h2">페이지 ({pages.length})</div>
           <div className="ngc-caption mt-1">
             체크된 페이지에만 커버가 적용됩니다. 행별로 다른 디자인을 지정할 수 있습니다.
           </div>
         </div>
-        <label className="inline-flex items-center gap-2 text-[13px] select-none cursor-pointer">
-          <input
-            type="checkbox"
-            checked={allChecked}
-            onChange={(e) => onToggleAll(e.target.checked)}
-          />
-          전체 선택
-        </label>
+        <div className="flex items-center gap-3 flex-wrap">
+          <div
+            className="inline-flex items-center rounded-full border border-[var(--ngc-border)] bg-white p-0.5 text-[12px] font-medium"
+            role="group"
+            aria-label="커버 필터"
+          >
+            {(
+              [
+                { id: 'all', label: `전체 (${pages.length})` },
+                { id: 'with', label: `있음 (${withCount})` },
+                { id: 'without', label: `없음 (${withoutCount})` },
+              ] as const
+            ).map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => setCoverFilter(opt.id)}
+                className={
+                  'px-2.5 py-1 rounded-full transition-colors ' +
+                  (coverFilter === opt.id
+                    ? 'bg-[var(--ngc-accent)] text-white'
+                    : 'text-[var(--ngc-fg-muted)]')
+                }
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <label className="inline-flex items-center gap-2 text-[13px] select-none cursor-pointer">
+            <input
+              type="checkbox"
+              checked={allChecked}
+              onChange={(e) =>
+                onToggleAll(e.target.checked, filteredPages.map((p) => p.id))
+              }
+            />
+            전체 선택
+          </label>
+        </div>
       </div>
 
       <table className="w-full text-[14px] border-collapse">
@@ -66,7 +115,18 @@ export default function PageList({
           </tr>
         </thead>
         <tbody>
-          {pages.map((p) => {
+          {filteredPages.length === 0 && (
+            <tr>
+              <td colSpan={5} className="py-8 text-center ngc-caption">
+                {coverFilter === 'with'
+                  ? '커버 이미지가 있는 페이지가 없습니다.'
+                  : coverFilter === 'without'
+                  ? '커버 이미지가 없는 페이지가 없습니다.'
+                  : '페이지가 없습니다.'}
+              </td>
+            </tr>
+          )}
+          {filteredPages.map((p) => {
             // If a per-page design override is set, look that one up in
             // allDesigns. Otherwise use defaultDesign as-is — it already
             // carries the inline tweak overrides from the parent. (Looking

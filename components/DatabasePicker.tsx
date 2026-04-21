@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Database, RefreshCw, Plus, X, EyeOff, Link2, CheckSquare, Square } from 'lucide-react';
+import { Database, RefreshCw, Plus, X, EyeOff, Link2, CheckSquare, Square, Search } from 'lucide-react';
 
 interface Item {
   id: string;
@@ -49,6 +49,9 @@ export default function DatabasePicker({ onPick }: Props) {
   // Multi-select for bulk hide / remove
   const [selectMode, setSelectMode] = useState(false);
   const [bulkSelected, setBulkSelected] = useState<Set<string>>(new Set());
+
+  // Search query (matches title or id, case-insensitive substring)
+  const [query, setQuery] = useState('');
 
   // Load persisted state on mount.
   useEffect(() => {
@@ -159,10 +162,20 @@ export default function DatabasePicker({ onPick }: Props) {
     return out;
   }, [items, manualItems]);
 
-  const visibleItems = useMemo(() => {
+  const baseVisibleItems = useMemo(() => {
     if (!mergedItems) return null;
     return showHidden ? mergedItems : mergedItems.filter((i) => !hiddenIds.has(i.id));
   }, [mergedItems, hiddenIds, showHidden]);
+
+  // Apply text search on top of visibility filtering. Empty query → no-op.
+  const visibleItems = useMemo(() => {
+    if (!baseVisibleItems) return null;
+    const q = query.trim().toLowerCase();
+    if (!q) return baseVisibleItems;
+    return baseVisibleItems.filter(
+      (i) => i.title.toLowerCase().includes(q) || i.id.toLowerCase().includes(q),
+    );
+  }, [baseVisibleItems, query]);
 
   const hiddenCount = mergedItems
     ? mergedItems.filter((i) => hiddenIds.has(i.id)).length
@@ -256,6 +269,39 @@ export default function DatabasePicker({ onPick }: Props) {
           )}
         </div>
       </div>
+
+      {/* Search — match against title or id. */}
+      {!selectMode && (baseVisibleItems?.length ?? 0) > 0 && (
+        <div className="mb-3 relative">
+          <Search
+            size={16}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--ngc-fg-muted)] pointer-events-none"
+          />
+          <input
+            type="search"
+            placeholder="이름 또는 ID로 검색"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="w-full text-[14px] py-2.5 pl-9 pr-9 rounded-lg border border-[var(--ngc-border)] bg-white outline-none focus:border-[var(--ngc-accent)]"
+            autoComplete="off"
+          />
+          {query && (
+            <button
+              type="button"
+              onClick={() => setQuery('')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-black/5 text-[var(--ngc-fg-muted)]"
+              aria-label="검색어 지우기"
+            >
+              <X size={14} />
+            </button>
+          )}
+          {query && (
+            <div className="ngc-caption mt-1.5 ml-1">
+              {(visibleItems?.length ?? 0)}개 일치 / 전체 {(baseVisibleItems?.length ?? 0)}개
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Add by ID — for DBs that Notion search misses (e.g. inline DBs). */}
       {!selectMode && (
