@@ -47,14 +47,14 @@ export default function DesignGallery({
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex gap-1 flex-wrap">
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div className="flex gap-1 flex-wrap min-w-0">
           {TABS.map((t) => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
               className={
-                'text-[13px] font-medium px-3 py-1.5 rounded-full transition-colors ' +
+                'text-[13px] font-medium px-3 py-1.5 rounded-full transition-colors whitespace-nowrap ' +
                 (tab === t.id
                   ? 'bg-[var(--ngc-accent)] text-white'
                   : 'hover:bg-black/5 text-[var(--ngc-fg-muted)]')
@@ -66,7 +66,7 @@ export default function DesignGallery({
         </div>
         <button
           onClick={onAddCustomClick}
-          className="ngc-btn-secondary inline-flex items-center gap-1.5 text-[13px] py-1.5 px-3"
+          className="ngc-btn-secondary inline-flex items-center gap-1.5 text-[13px] py-1.5 px-3 shrink-0 whitespace-nowrap"
         >
           <Plus size={14} /> 새 디자인
         </button>

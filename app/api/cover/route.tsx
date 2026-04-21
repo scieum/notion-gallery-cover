@@ -141,11 +141,14 @@ export async function GET(req: NextRequest) {
   if (p.caption) lines.push({ text: p.caption, fontSize: capSize, fontWeight: capWeight });
 
   function TitleStack({ maxWidthPx }: { maxWidthPx: number }) {
-    // Find the smallest scale that makes every line fit horizontally.
+    // 6% safety buffer — our per-glyph estimate is approximate (decorative
+    // Korean fonts and bold weights run slightly wider than 1.0em per CJK
+    // glyph), so we shrink a touch more than the naive fit demands.
+    const safeWidthPx = maxWidthPx * 0.94;
     let widthScale = 1;
     for (const l of lines) {
       const est = estimateTextWidth(l.text, l.fontSize, letterSpacingEm);
-      if (est > maxWidthPx) widthScale = Math.min(widthScale, maxWidthPx / est);
+      if (est > safeWidthPx) widthScale = Math.min(widthScale, safeWidthPx / est);
     }
     // Also guarantee the vertical stack fits inside the available height.
     const availableHeight = height - padding * 2;
