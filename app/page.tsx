@@ -527,6 +527,12 @@ export default function Page() {
         sampleName={pages?.[0]?.title ?? '예시 텍스트'}
         previewRatio={COVER_DIMENSIONS[coverMode].w / COVER_DIMENSIONS[coverMode].h}
       />
+
+      <footer className="border-t border-[var(--ngc-border)] mt-16">
+        <div className="max-w-[1800px] mx-auto px-8 py-6 ngc-caption text-center">
+          © 2026 𝐍𝐨𝐭𝐢𝐨𝐧𝐓𝐚𝐥𝐤. All rights reserved.
+        </div>
+      </footer>
     </main>
   );
 }
