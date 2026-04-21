@@ -268,7 +268,7 @@ export default function Page() {
         <div className="max-w-[1800px] mx-auto px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ImageIcon size={18} />
-            <div className="font-semibold tracking-tight">Notion Gallery Cover</div>
+            <div className="font-semibold tracking-tight">NotionTalk Cover Maker</div>
           </div>
           {authState === 'authed' && (
             <div className="flex items-center gap-3">
