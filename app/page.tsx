@@ -9,7 +9,8 @@ import DesignEditor from '@/components/DesignEditor';
 import PageList from '@/components/PageList';
 import { BUILTIN_DESIGNS, findDesign } from '@/lib/designs';
 import { absoluteCoverUrl } from '@/lib/cover-url';
-import type { Design, NotionPageLite } from '@/lib/types';
+import { COVER_DIMENSIONS } from '@/lib/types';
+import type { CoverMode, Design, NotionPageLite } from '@/lib/types';
 
 interface DBItem {
   id: string;
@@ -21,6 +22,7 @@ interface DBItem {
 const CUSTOM_KEY = 'ngc:custom-designs:v1';
 const LAST_DB_KEY = 'ngc:last-db:v1';
 const AUTO_KEY = 'ngc:auto-apply:v1';
+const MODE_KEY = 'ngc:cover-mode:v1';
 const AUTO_APPLY_DEBOUNCE_MS = 1500;
 
 export default function Page() {
@@ -39,6 +41,7 @@ export default function Page() {
   const [perPageDesign, setPerPageDesign] = useState<Record<string, string | undefined>>({});
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
+  const [coverMode, setCoverMode] = useState<CoverMode>('page');
   const [applying, setApplying] = useState(false);
   const [autoApply, setAutoApply] = useState(true);
   const [lastAutoAt, setLastAutoAt] = useState<number | null>(null);
@@ -83,10 +86,17 @@ export default function Page() {
       const raw = localStorage.getItem(AUTO_KEY);
       if (raw !== null) setAutoApply(raw === '1');
     } catch {}
+    try {
+      const raw = localStorage.getItem(MODE_KEY);
+      if (raw === 'page' || raw === 'gallery') setCoverMode(raw);
+    } catch {}
   }, []);
   useEffect(() => {
     localStorage.setItem(AUTO_KEY, autoApply ? '1' : '0');
   }, [autoApply]);
+  useEffect(() => {
+    localStorage.setItem(MODE_KEY, coverMode);
+  }, [coverMode]);
 
   // --- pages
   useEffect(() => {
@@ -139,12 +149,19 @@ export default function Page() {
     const origin =
       (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_APP_URL) ||
       (typeof window !== 'undefined' ? window.location.origin : '');
+    const dim = COVER_DIMENSIONS[coverMode];
     return pages
       .filter((p) => selected.has(p.id))
       .map((p) => {
         const d =
           (perPageDesign[p.id] && findDesign(perPageDesign[p.id]!, customs)) || defaultDesign;
-        const params = { ...d.params, name: p.title, style: d.params.style ?? 'solid' };
+        const params = {
+          ...d.params,
+          name: p.title,
+          style: d.params.style ?? 'solid',
+          w: dim.w,
+          h: dim.h,
+        };
         return { pageId: p.id, coverUrl: absoluteCoverUrl(origin, params as any) };
       });
   }
@@ -200,7 +217,7 @@ export default function Page() {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoApply, pages, defaultDesignId, perPageDesign, selected, customs]);
+  }, [autoApply, pages, defaultDesignId, perPageDesign, selected, customs, coverMode]);
 
   // ---- render
   if (authState === 'loading') {
@@ -257,6 +274,28 @@ export default function Page() {
                 </div>
               </div>
               <div className="flex items-center gap-3">
+                <div
+                  className="inline-flex items-center rounded-full border border-[var(--ngc-border)] bg-white p-0.5 text-[13px] font-medium"
+                  role="group"
+                  aria-label="커버 종류"
+                >
+                  {(['page', 'gallery'] as CoverMode[]).map((m) => (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => setCoverMode(m)}
+                      className={
+                        'px-3 py-1 rounded-full transition-colors ' +
+                        (coverMode === m
+                          ? 'bg-[var(--ngc-accent)] text-white'
+                          : 'text-[var(--ngc-fg-muted)]')
+                      }
+                      title={COVER_DIMENSIONS[m].label}
+                    >
+                      {m === 'page' ? '페이지' : '갤러리'}
+                    </button>
+                  ))}
+                </div>
                 <button
                   onClick={() => setAutoApply((v) => !v)}
                   className={
@@ -302,6 +341,7 @@ export default function Page() {
                 customs={customs}
                 selectedId={defaultDesignId}
                 sampleName={pages?.[0]?.title ?? '예시 텍스트'}
+                previewRatio={COVER_DIMENSIONS[coverMode].w / COVER_DIMENSIONS[coverMode].h}
                 onSelect={(d) => setDefaultDesignId(d.id)}
                 onAddCustomClick={() => setEditorOpen(true)}
                 onDeleteCustom={(id) => setCustoms((cs) => cs.filter((c) => c.id !== id))}
@@ -340,6 +380,7 @@ export default function Page() {
         onClose={() => setEditorOpen(false)}
         onSave={(d) => setCustoms((cs) => [...cs, d])}
         sampleName={pages?.[0]?.title ?? '예시 텍스트'}
+        previewRatio={COVER_DIMENSIONS[coverMode].w / COVER_DIMENSIONS[coverMode].h}
       />
     </main>
   );

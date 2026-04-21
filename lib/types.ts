@@ -3,6 +3,14 @@ export type PatternName = 'dots' | 'lines' | 'grid' | 'waves' | 'circles';
 export type EmojiLayout = 'side' | 'stack';
 export type Align = 'left' | 'center';
 
+/** Output target. Page covers are wide banners; gallery covers are 4:3 cards. */
+export type CoverMode = 'page' | 'gallery';
+
+export const COVER_DIMENSIONS: Record<CoverMode, { w: number; h: number; label: string }> = {
+  page: { w: 1500, h: 600, label: '페이지 커버 (1500×600)' },
+  gallery: { w: 1200, h: 900, label: '갤러리 커버 (1200×900)' },
+};
+
 export interface CoverParams {
   name: string;
   style: CoverStyle;

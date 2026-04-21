@@ -10,6 +10,8 @@ interface Props {
   customs: Design[];
   selectedId: string | null;
   sampleName: string;
+  /** width/height of the cover output. Default 2.5 (page cover 1500x600). */
+  previewRatio?: number;
   onSelect: (d: Design) => void;
   onAddCustomClick: () => void;
   onDeleteCustom: (id: string) => void;
@@ -28,6 +30,7 @@ export default function DesignGallery({
   customs,
   selectedId,
   sampleName,
+  previewRatio,
   onSelect,
   onAddCustomClick,
   onDeleteCustom,
@@ -91,7 +94,7 @@ export default function DesignGallery({
                 }
                 style={{ borderRadius: 14 }}
               >
-                <CoverPreview design={d} name={sampleName} />
+                <CoverPreview design={d} name={sampleName} ratio={previewRatio} />
                 <div className="mt-2 flex items-center justify-between gap-2">
                   <div className="text-[13px] font-medium truncate">{d.label}</div>
                   {isSelected && (

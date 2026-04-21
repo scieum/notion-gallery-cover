@@ -60,7 +60,6 @@ export async function GET(req: NextRequest) {
   const width = p.w ?? 1500;
   const height = p.h ?? 600;
   const fg = p.fg ?? '#ffffff';
-  const align = p.align ?? 'left';
   const size = p.size ?? 96;
   const fonts = await loadFonts();
 
@@ -73,28 +72,35 @@ export async function GET(req: NextRequest) {
         }
       : {};
 
-  const textAlign = align === 'center' ? 'center' : 'flex-start';
-  const padding = 96;
+  // Padding scales with the smaller dimension so 1200x900 (gallery) and
+  // 1500x600 (page banner) both look balanced.
+  const padding = Math.round(Math.min(width, height) * 0.12);
 
   let body: React.ReactElement;
 
   if (p.style === 'emoji') {
     const emoji = p.emoji ?? '✨';
     const layout = p.layout ?? 'side';
+    // Scale the emoji glyph to the available height so it doesn't dominate
+    // square-ish gallery covers.
+    const emojiSize = layout === 'side'
+      ? Math.round(Math.min(height * 0.55, width * 0.32))
+      : Math.round(height * 0.4);
+
     if (layout === 'side') {
       body = (
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'flex-start',
+            justifyContent: 'center',
             width: '100%',
             height: '100%',
             padding,
-            gap: 56,
+            gap: Math.round(padding * 0.6),
           }}
         >
-          <div style={{ fontSize: 320, lineHeight: 1, display: 'flex' }}>{emoji}</div>
+          <div style={{ fontSize: emojiSize, lineHeight: 1, display: 'flex' }}>{emoji}</div>
           <div
             style={{
               display: 'flex',
@@ -104,7 +110,7 @@ export async function GET(req: NextRequest) {
               fontWeight: 800,
               lineHeight: 1.1,
               letterSpacing: '-0.02em',
-              maxWidth: width - padding * 2 - 360,
+              maxWidth: width - padding * 2 - emojiSize - Math.round(padding * 0.6),
             }}
           >
             {p.name}
@@ -122,10 +128,10 @@ export async function GET(req: NextRequest) {
             width: '100%',
             height: '100%',
             padding,
-            gap: 28,
+            gap: Math.round(padding * 0.3),
           }}
         >
-          <div style={{ fontSize: 240, lineHeight: 1, display: 'flex' }}>{emoji}</div>
+          <div style={{ fontSize: emojiSize, lineHeight: 1, display: 'flex' }}>{emoji}</div>
           <div
             style={{
               color: fg,
@@ -151,8 +157,8 @@ export async function GET(req: NextRequest) {
           width: '100%',
           height: '100%',
           padding,
-          justifyContent: 'flex-end',
-          alignItems: textAlign as any,
+          justifyContent: 'center',
+          alignItems: 'center',
           color: fg,
           ...overlayStyle,
         }}
@@ -164,7 +170,7 @@ export async function GET(req: NextRequest) {
             lineHeight: 1.1,
             letterSpacing: '-0.02em',
             maxWidth: width - padding * 2,
-            textAlign: align,
+            textAlign: 'center',
             display: 'flex',
           }}
         >

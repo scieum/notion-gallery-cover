@@ -10,11 +10,13 @@ interface Props {
   onClose: () => void;
   onSave: (d: Design) => void;
   sampleName: string;
+  /** width/height of the cover output. Default 2.5 (page cover 1500x600). */
+  previewRatio?: number;
 }
 
 const PATTERNS: PatternName[] = ['dots', 'lines', 'grid', 'waves', 'circles'];
 
-export default function DesignEditor({ open, onClose, onSave, sampleName }: Props) {
+export default function DesignEditor({ open, onClose, onSave, sampleName, previewRatio }: Props) {
   const [label, setLabel] = useState('내 디자인');
   const [style, setStyle] = useState<CoverStyle>('gradient');
   const [bg, setBg] = useState('#2c6ef2');
@@ -73,7 +75,7 @@ export default function DesignEditor({ open, onClose, onSave, sampleName }: Prop
         </div>
 
         <div className="p-5 space-y-5">
-          <CoverPreview design={tempDesign} name={sampleName} />
+          <CoverPreview design={tempDesign} name={sampleName} ratio={previewRatio} />
 
           <div>
             <label className="ngc-caption block mb-1">이름</label>
