@@ -83,23 +83,6 @@ function patternSvgDataUri(pattern: PatternName, fg: string): string {
   }
 }
 
-// Estimate per-character width at a given font size. CJK glyphs are ~1em wide,
-// Latin averages ~0.55em. Used to shrink font sizes so long titles never clip.
-function estimateTextWidth(text: string, fontSize: number, letterSpacingEm: number): number {
-  let units = 0;
-  for (const ch of text) {
-    const code = ch.codePointAt(0) ?? 0;
-    const wide =
-      (code >= 0x1100 && code <= 0x11ff) || // Hangul Jamo
-      (code >= 0x2e80 && code <= 0x9fff) || // CJK Unified, Radicals, Hiragana, Katakana
-      (code >= 0xa960 && code <= 0xa97f) || // Hangul Jamo Extended-A
-      (code >= 0xac00 && code <= 0xd7ff) || // Hangul Syllables
-      (code >= 0xf900 && code <= 0xfaff) || // CJK Compatibility
-      (code >= 0xff00 && code <= 0xffef);   // Halfwidth/Fullwidth
-    units += wide ? 1 : 0.55;
-  }
-  return units * fontSize + Math.max(0, text.length - 1) * letterSpacingEm * fontSize;
-}
 
 export async function GET(req: NextRequest) {
   const p = parse(req);
@@ -141,26 +124,6 @@ export async function GET(req: NextRequest) {
   if (p.caption) lines.push({ text: p.caption, fontSize: capSize, fontWeight: capWeight });
 
   function TitleStack({ maxWidthPx }: { maxWidthPx: number }) {
-    // 6% safety buffer — our per-glyph estimate is approximate (decorative
-    // Korean fonts and bold weights run slightly wider than 1.0em per CJK
-    // glyph), so we shrink a touch more than the naive fit demands.
-    const safeWidthPx = maxWidthPx * 0.94;
-    let widthScale = 1;
-    for (const l of lines) {
-      const est = estimateTextWidth(l.text, l.fontSize, letterSpacingEm);
-      if (est > safeWidthPx) widthScale = Math.min(widthScale, safeWidthPx / est);
-    }
-    // Also guarantee the vertical stack fits inside the available height.
-    const availableHeight = height - padding * 2;
-    const stackHeightAt = (s: number) =>
-      lines.reduce((acc, l) => acc + l.fontSize * s * lineHeight, 0) +
-      Math.max(0, lines.length - 1) * stackGap;
-    let heightScale = 1;
-    if (stackHeightAt(1) > availableHeight) {
-      heightScale = availableHeight / stackHeightAt(1);
-    }
-    const scale = Math.min(widthScale, heightScale);
-
     return (
       <div
         style={{
@@ -168,7 +131,11 @@ export async function GET(req: NextRequest) {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: Math.round(stackGap * scale),
+          gap: stackGap,
+          // Both maxWidth and width are needed — satori uses width to bound
+          // child text wrapping; without it, long lines render on one row
+          // and overflow / get squished.
+          width: maxWidthPx,
           maxWidth: maxWidthPx,
         }}
       >
@@ -176,15 +143,24 @@ export async function GET(req: NextRequest) {
           <div
             key={i}
             style={{
-              fontSize: Math.max(12, Math.floor(l.fontSize * scale)),
+              // Column direction + 100% width is the satori incantation that
+              // lets the text node wrap naturally when too long, instead of
+              // being treated as a single inline flex item.
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              width: '100%',
+              fontSize: l.fontSize,
               fontWeight: l.fontWeight,
               lineHeight,
               letterSpacing,
               fontStyle,
               textAlign: 'center',
-              display: 'flex',
               color: fg,
-              whiteSpace: 'nowrap',
+              // keep-all = don't break inside Korean words; break only at
+              // spaces. Falls back to character-level break if a single
+              // unbroken token is wider than the box.
+              wordBreak: 'keep-all',
             }}
           >
             {l.text}
