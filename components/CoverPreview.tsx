@@ -7,15 +7,30 @@ import { coverPath, coverSearchParams } from '@/lib/cover-url';
 interface Props {
   design: Design;
   name: string;
+  subtitle?: string;
+  caption?: string;
   className?: string;
   ratio?: number; // width/height. default 2.5 (1500/600)
 }
 
 /** Lightweight server-rendered preview via <img src="/api/cover?..."> */
-export default function CoverPreview({ design, name, className, ratio = 2.5 }: Props) {
+export default function CoverPreview({
+  design,
+  name,
+  subtitle,
+  caption,
+  className,
+  ratio = 2.5,
+}: Props) {
   const params: CoverParams = useMemo(
-    () => ({ ...design.params, name, style: design.params.style ?? 'solid' }),
-    [design, name],
+    () => ({
+      ...design.params,
+      name,
+      subtitle,
+      caption,
+      style: design.params.style ?? 'solid',
+    }),
+    [design, name, subtitle, caption],
   );
   const src = coverPath(params);
   const sp = coverSearchParams(params);

@@ -11,7 +11,14 @@ import TweakPanel from '@/components/TweakPanel';
 import { BUILTIN_DESIGNS, findDesign } from '@/lib/designs';
 import { absoluteCoverUrl } from '@/lib/cover-url';
 import { COVER_DIMENSIONS } from '@/lib/types';
-import type { CoverMode, CoverParams, Design, NotionPageLite } from '@/lib/types';
+import type {
+  CoverMode,
+  CoverParams,
+  Design,
+  NotionPageLite,
+  PropertyMapping,
+  PropertyMeta,
+} from '@/lib/types';
 
 interface DBItem {
   id: string;
@@ -34,6 +41,12 @@ export default function Page() {
   const [pages, setPages] = useState<NotionPageLite[] | null>(null);
   const [pagesError, setPagesError] = useState<string | null>(null);
   const [pagesLoading, setPagesLoading] = useState(false);
+  const [schema, setSchema] = useState<PropertyMeta[]>([]);
+  const [mapping, setMapping] = useState<PropertyMapping>({
+    title: null,
+    subtitle: null,
+    caption: null,
+  });
 
   const [customs, setCustoms] = useState<Design[]>([]);
   const [editorOpen, setEditorOpen] = useState(false);
@@ -100,24 +113,53 @@ export default function Page() {
     localStorage.setItem(MODE_KEY, coverMode);
   }, [coverMode]);
 
-  // --- pages
+  // --- pages + schema (in parallel)
   useEffect(() => {
     if (!db) return;
     setPagesLoading(true);
     setPagesError(null);
-    fetch(`/api/notion/pages?database_id=${encodeURIComponent(db.id)}`)
-      .then(async (r) => {
+    setMapping({ title: null, subtitle: null, caption: null });
+    Promise.all([
+      fetch(`/api/notion/pages?database_id=${encodeURIComponent(db.id)}`).then(async (r) => {
         const d = await r.json();
         if (!r.ok) throw new Error(d?.error ?? 'Failed');
         return d.pages as NotionPageLite[];
-      })
-      .then((ps) => {
+      }),
+      fetch(`/api/notion/databases/${encodeURIComponent(db.id)}`).then(async (r) => {
+        const d = await r.json();
+        if (!r.ok) throw new Error(d?.error ?? 'Failed');
+        return (d.schema ?? []) as PropertyMeta[];
+      }),
+    ])
+      .then(([ps, sch]) => {
         setPages(ps);
         setSelected(new Set(ps.map((p) => p.id)));
+        setSchema(sch);
+        // Default 대제목 → the title-type property if present.
+        const titleProp = sch.find((p) => p.type === 'title');
+        setMapping({
+          title: titleProp?.name ?? null,
+          subtitle: null,
+          caption: null,
+        });
       })
       .catch((e) => setPagesError(e?.message ?? String(e)))
       .finally(() => setPagesLoading(false));
   }, [db]);
+
+  /** Resolve the three text slots for a page using the current mapping. */
+  function pageTexts(p: NotionPageLite) {
+    const get = (propName: string | null): string => {
+      if (!propName) return '';
+      return p.properties?.[propName] ?? '';
+    };
+    return {
+      // Always fall back to the page's title — never let 대제목 be empty.
+      name: get(mapping.title) || p.title,
+      subtitle: get(mapping.subtitle),
+      caption: get(mapping.caption),
+    };
+  }
 
   const allDesigns = useMemo(() => [...BUILTIN_DESIGNS, ...customs], [customs]);
   const defaultDesign = useMemo(
@@ -185,9 +227,10 @@ export default function Page() {
         const d =
           (perPageDesign[p.id] && findDesign(perPageDesign[p.id]!, customs)) ||
           effectiveDefaultDesign;
+        const t = pageTexts(p);
         const params = {
           ...d.params,
-          name: p.title,
+          ...t,
           style: d.params.style ?? 'solid',
           w: dim.w,
           h: dim.h,
@@ -251,7 +294,7 @@ export default function Page() {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoApply, pages, defaultDesignId, perPageDesign, selected, customs, coverMode, overrides]);
+  }, [autoApply, pages, defaultDesignId, perPageDesign, selected, customs, coverMode, overrides, mapping]);
 
   // ---- render
   if (authState === 'loading') {
@@ -376,6 +419,37 @@ export default function Page() {
               </div>
             </div>
 
+            {/* Property → text-slot mapping. 대제목/중제목/소제목 = name/subtitle/caption. */}
+            {schema.length > 0 && (
+              <div className="ngc-soft p-4 flex flex-wrap items-end gap-4">
+                <div className="text-[13px]">
+                  <div className="font-semibold mb-0.5">표시할 텍스트</div>
+                  <div className="ngc-caption">
+                    각 슬롯에 보여줄 데이터베이스 속성을 선택하세요.
+                  </div>
+                </div>
+                <PropertyMapField
+                  label="대제목"
+                  value={mapping.title}
+                  schema={schema}
+                  onChange={(v) => setMapping((m) => ({ ...m, title: v }))}
+                  required
+                />
+                <PropertyMapField
+                  label="중제목"
+                  value={mapping.subtitle}
+                  schema={schema}
+                  onChange={(v) => setMapping((m) => ({ ...m, subtitle: v }))}
+                />
+                <PropertyMapField
+                  label="소제목"
+                  value={mapping.caption}
+                  schema={schema}
+                  onChange={(v) => setMapping((m) => ({ ...m, caption: v }))}
+                />
+              </div>
+            )}
+
             {/* Tweak + design grid (left) | page list (right) */}
             <div className="grid gap-10 lg:grid-cols-[minmax(380px,460px)_1fr]">
               <div className="space-y-8 min-w-0">
@@ -425,6 +499,7 @@ export default function Page() {
                     applying={applying}
                     results={results}
                     previewRatio={COVER_DIMENSIONS[coverMode].w / COVER_DIMENSIONS[coverMode].h}
+                    pageTexts={pageTexts}
                   />
                 )}
               </div>
@@ -441,5 +516,37 @@ export default function Page() {
         previewRatio={COVER_DIMENSIONS[coverMode].w / COVER_DIMENSIONS[coverMode].h}
       />
     </main>
+  );
+}
+
+function PropertyMapField({
+  label,
+  value,
+  schema,
+  onChange,
+  required,
+}: {
+  label: string;
+  value: string | null;
+  schema: PropertyMeta[];
+  onChange: (v: string | null) => void;
+  required?: boolean;
+}) {
+  return (
+    <label className="block min-w-[180px] flex-1">
+      <div className="ngc-caption mb-1">{label}</div>
+      <select
+        className="w-full text-[13px] py-2 px-2.5 rounded-md border border-[var(--ngc-border)] bg-white"
+        value={value ?? ''}
+        onChange={(e) => onChange(e.target.value === '' ? null : e.target.value)}
+      >
+        {!required && <option value="">사용 안 함</option>}
+        {schema.map((p) => (
+          <option key={p.name} value={p.name}>
+            {p.name} · {p.type}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }

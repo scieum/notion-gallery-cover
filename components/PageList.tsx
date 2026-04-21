@@ -17,6 +17,8 @@ interface Props {
   results: Record<string, { ok: boolean; error?: string }>;
   /** width/height of the cover output. Default 2.5 (page cover 1500x600). */
   previewRatio?: number;
+  /** Resolves the three text slots for a given page from current mapping. */
+  pageTexts?: (p: NotionPageLite) => { name: string; subtitle: string; caption: string };
 }
 
 export default function PageList({
@@ -31,6 +33,7 @@ export default function PageList({
   applying,
   results,
   previewRatio,
+  pageTexts,
 }: Props) {
   const allChecked = pages.length > 0 && pages.every((p) => selected.has(p.id));
   return (
@@ -103,7 +106,18 @@ export default function PageList({
                 </td>
                 <td className="py-4 px-2">
                   {chosen ? (
-                    <CoverPreview design={chosen} name={p.title} ratio={previewRatio} />
+                    (() => {
+                      const t = pageTexts ? pageTexts(p) : { name: p.title, subtitle: '', caption: '' };
+                      return (
+                        <CoverPreview
+                          design={chosen}
+                          name={t.name}
+                          subtitle={t.subtitle || undefined}
+                          caption={t.caption || undefined}
+                          ratio={previewRatio}
+                        />
+                      );
+                    })()
                   ) : (
                     <div className="ngc-caption">디자인 미지정</div>
                   )}

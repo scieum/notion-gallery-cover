@@ -12,7 +12,12 @@ export const COVER_DIMENSIONS: Record<CoverMode, { w: number; h: number; label: 
 };
 
 export interface CoverParams {
+  /** 대제목 — main title (largest line). Required. */
   name: string;
+  /** 중제목 — optional secondary line, rendered ~55% of `size`. */
+  subtitle?: string;
+  /** 소제목 — optional tertiary line, rendered ~35% of `size`. */
+  caption?: string;
   style: CoverStyle;
   bg?: string;
   bg2?: string;
@@ -29,6 +34,19 @@ export interface CoverParams {
   font?: string;
 }
 
+/** Which Notion property feeds each title slot on a cover. `null` = unused. */
+export interface PropertyMapping {
+  title: string | null; // 대제목 (defaults to the page's title property)
+  subtitle: string | null; // 중제목
+  caption: string | null; // 소제목
+}
+
+/** Description of one Notion DB property — type + display name. */
+export interface PropertyMeta {
+  name: string;
+  type: string;
+}
+
 export type DesignCategory = 'solid' | 'gradient' | 'pattern' | 'emoji' | 'custom';
 
 export interface Design {
@@ -43,4 +61,6 @@ export interface NotionPageLite {
   title: string;
   currentCoverUrl: string | null;
   url: string;
+  /** All readable properties on this page, name → string-coerced value. */
+  properties?: Record<string, string>;
 }

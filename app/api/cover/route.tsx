@@ -14,6 +14,8 @@ function parse(req: NextRequest): CoverParams {
   };
   return {
     name: q.get('name') ?? 'Untitled',
+    subtitle: q.get('subtitle') ?? undefined,
+    caption: q.get('caption') ?? undefined,
     style: (q.get('style') as CoverParams['style']) ?? 'solid',
     bg: q.get('bg') ?? undefined,
     bg2: q.get('bg2') ?? undefined,
@@ -80,6 +82,47 @@ export async function GET(req: NextRequest) {
   // 1500x600 (page banner) both look balanced.
   const padding = Math.round(Math.min(width, height) * 0.12);
 
+  // Title stack — 대제목 / 중제목 / 소제목. Empty slots are filtered.
+  const subSize = Math.round(size * 0.55);
+  const capSize = Math.round(size * 0.35);
+  const stackGap = Math.round(size * 0.18);
+  const lines: Array<{ text: string; fontSize: number; fontWeight: number }> = [];
+  if (p.name) lines.push({ text: p.name, fontSize: size, fontWeight: 800 });
+  if (p.subtitle) lines.push({ text: p.subtitle, fontSize: subSize, fontWeight: 700 });
+  if (p.caption) lines.push({ text: p.caption, fontSize: capSize, fontWeight: 500 });
+
+  function TitleStack({ maxWidthPx }: { maxWidthPx: number }) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: stackGap,
+          maxWidth: maxWidthPx,
+        }}
+      >
+        {lines.map((l, i) => (
+          <div
+            key={i}
+            style={{
+              fontSize: l.fontSize,
+              fontWeight: l.fontWeight,
+              lineHeight: 1.1,
+              letterSpacing: '-0.02em',
+              textAlign: 'center',
+              display: 'flex',
+              color: fg,
+            }}
+          >
+            {l.text}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   let body: React.ReactElement;
 
   if (p.style === 'emoji') {
@@ -105,20 +148,9 @@ export async function GET(req: NextRequest) {
           }}
         >
           <div style={{ fontSize: emojiSize, lineHeight: 1, display: 'flex' }}>{emoji}</div>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              color: fg,
-              fontSize: size,
-              fontWeight: 800,
-              lineHeight: 1.1,
-              letterSpacing: '-0.02em',
-              maxWidth: width - padding * 2 - emojiSize - Math.round(padding * 0.6),
-            }}
-          >
-            {p.name}
-          </div>
+          <TitleStack
+            maxWidthPx={width - padding * 2 - emojiSize - Math.round(padding * 0.6)}
+          />
         </div>
       );
     } else {
@@ -136,19 +168,7 @@ export async function GET(req: NextRequest) {
           }}
         >
           <div style={{ fontSize: emojiSize, lineHeight: 1, display: 'flex' }}>{emoji}</div>
-          <div
-            style={{
-              color: fg,
-              fontSize: size,
-              fontWeight: 700,
-              lineHeight: 1.15,
-              letterSpacing: '-0.02em',
-              textAlign: 'center',
-              display: 'flex',
-            }}
-          >
-            {p.name}
-          </div>
+          <TitleStack maxWidthPx={width - padding * 2} />
         </div>
       );
     }
@@ -167,19 +187,7 @@ export async function GET(req: NextRequest) {
           ...overlayStyle,
         }}
       >
-        <div
-          style={{
-            fontSize: size,
-            fontWeight: 800,
-            lineHeight: 1.1,
-            letterSpacing: '-0.02em',
-            maxWidth: width - padding * 2,
-            textAlign: 'center',
-            display: 'flex',
-          }}
-        >
-          {p.name}
-        </div>
+        <TitleStack maxWidthPx={width - padding * 2} />
       </div>
     );
   }

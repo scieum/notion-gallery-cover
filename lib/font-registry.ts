@@ -75,6 +75,43 @@ export const FONT_REGISTRY: Record<string, FontDef> = {
       700: 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/GangwonEdu_OTFBoldA.woff',
     },
   },
+  gangwonpower: {
+    family: 'GangwonEducationTteontteon',
+    label: '강원교육튼튼체',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/GangwonEduPowerExtraBoldA.woff',
+    },
+  },
+  juache: {
+    family: 'Juache',
+    label: '배민 주아체',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/BMJUA.woff',
+    },
+  },
+  hakgyo: {
+    family: 'SchoolSafetyNotification',
+    label: '학교안심 알림장',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/2408-5@1.0/HakgyoansimAllimjangTTF-R.woff2',
+      700: 'https://cdn.jsdelivr.net/gh/projectnoonnu/2408-5@1.0/HakgyoansimAllimjangTTF-B.woff2',
+    },
+  },
+  lotteria: {
+    family: 'LotteriaChwapttaenggyeo',
+    label: '롯데리아 촵땡겨체',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302@1.0/LOTTERIACHAB.woff2',
+    },
+  },
+  mona: {
+    family: 'Mona12',
+    label: 'Mona (픽셀)',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/MonadABXY/mona-font/web/Mona12.woff2',
+      700: 'https://cdn.jsdelivr.net/gh/MonadABXY/mona-font/web/Mona12-Bold.woff2',
+    },
+  },
 };
 
 /** UI helper — list of { key, label, family } for a <select>. */

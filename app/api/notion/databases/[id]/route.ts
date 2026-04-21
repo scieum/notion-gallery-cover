@@ -42,6 +42,11 @@ export async function GET(
   try {
     const notion = new Client({ auth: token });
     const db: any = await notion.databases.retrieve({ database_id: id });
+    const props = db?.properties ?? {};
+    const schema = Object.keys(props).map((key) => ({
+      name: key,
+      type: props[key]?.type ?? 'unknown',
+    }));
     return NextResponse.json({
       database: {
         id: db.id,
@@ -49,6 +54,7 @@ export async function GET(
         icon: pickIcon(db),
         url: db.url,
       },
+      schema,
     });
   } catch (err: any) {
     const code = err?.code === 'object_not_found' || err?.status === 404 ? 404 : 500;
