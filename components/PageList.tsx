@@ -15,6 +15,8 @@ interface Props {
   allDesigns: Design[];
   applying: boolean;
   results: Record<string, { ok: boolean; error?: string }>;
+  /** width/height of the cover output. Default 2.5 (page cover 1500x600). */
+  previewRatio?: number;
 }
 
 export default function PageList({
@@ -28,6 +30,7 @@ export default function PageList({
   allDesigns,
   applying,
   results,
+  previewRatio,
 }: Props) {
   const allChecked = pages.length > 0 && pages.every((p) => selected.has(p.id));
   return (
@@ -96,7 +99,7 @@ export default function PageList({
                   </td>
                   <td className="py-2 px-3">
                     {chosen ? (
-                      <CoverPreview design={chosen} name={p.title} />
+                      <CoverPreview design={chosen} name={p.title} ratio={previewRatio} />
                     ) : (
                       <div className="ngc-caption">디자인 미지정</div>
                     )}

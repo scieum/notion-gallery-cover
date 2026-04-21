@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { LogOut, Image as ImageIcon, PlayCircle, ArrowLeft, Zap, ZapOff, Loader2 } from 'lucide-react';
 import ConnectCard from '@/components/ConnectCard';
-import CoverPreview from '@/components/CoverPreview';
 import DatabasePicker from '@/components/DatabasePicker';
 import DesignGallery from '@/components/DesignGallery';
 import DesignEditor from '@/components/DesignEditor';
@@ -266,7 +265,7 @@ export default function Page() {
   return (
     <main className="min-h-screen">
       <header className="sticky top-0 z-10 backdrop-blur bg-white/80 border-b border-[var(--ngc-border)]">
-        <div className="max-w-[1200px] mx-auto px-6 py-3 flex items-center justify-between">
+        <div className="max-w-[1800px] mx-auto px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ImageIcon size={18} />
             <div className="font-semibold tracking-tight">Notion Gallery Cover</div>
@@ -282,7 +281,7 @@ export default function Page() {
         </div>
       </header>
 
-      <section className="max-w-[1200px] mx-auto px-6 py-8">
+      <section className="max-w-[1800px] mx-auto px-6 py-8">
         {authState === 'anon' && <ConnectCard />}
 
         {authState === 'authed' && !db && (
@@ -365,13 +364,18 @@ export default function Page() {
               </div>
             </div>
 
-            {/* Design + tweak (left) | live preview (right) */}
-            <div className="grid gap-6 lg:grid-cols-[minmax(360px,420px)_1fr]">
+            {/* Tweak + design grid (left) | page list (right) */}
+            <div className="grid gap-6 lg:grid-cols-[minmax(380px,460px)_1fr]">
               <div className="space-y-6 min-w-0">
+                <TweakPanel
+                  params={effectiveDefaultDesign?.params ?? null}
+                  onChange={(patch) => setOverrides((o) => ({ ...o, ...patch }))}
+                  onReset={() => setOverrides({})}
+                />
                 <div>
                   <div className="ngc-h2">디자인 선택</div>
                   <div className="ngc-caption mt-1">
-                    프리셋을 고르고, 아래 조정 패널에서 폰트·크기·색을 덮어 씁니다.
+                    프리셋을 고르고 위쪽 조정 패널에서 폰트·크기·색을 덮어 씁니다.
                   </div>
                   <div className="mt-4">
                     <DesignGallery
@@ -385,56 +389,34 @@ export default function Page() {
                     />
                   </div>
                 </div>
-                <TweakPanel
-                  params={effectiveDefaultDesign?.params ?? null}
-                  onChange={(patch) => setOverrides((o) => ({ ...o, ...patch }))}
-                  onReset={() => setOverrides({})}
-                />
               </div>
 
-              <div className="lg:sticky lg:top-20 self-start space-y-3 min-w-0">
-                <div className="ngc-h2">미리보기</div>
-                {effectiveDefaultDesign ? (
-                  <CoverPreview
-                    design={effectiveDefaultDesign}
-                    name={pages?.[0]?.title ?? '예시 텍스트'}
-                    ratio={COVER_DIMENSIONS[coverMode].w / COVER_DIMENSIONS[coverMode].h}
-                  />
-                ) : (
-                  <div className="ngc-card p-12 text-center">
-                    <div className="ngc-caption">왼쪽에서 디자인을 선택하세요</div>
+              <div className="min-w-0">
+                {pagesLoading && <div className="ngc-caption">페이지 불러오는 중…</div>}
+                {pagesError && (
+                  <div className="ngc-card p-4 text-[13px]" style={{ color: '#dd5b00' }}>
+                    {pagesError}
                   </div>
                 )}
-                <div className="ngc-caption">
-                  {COVER_DIMENSIONS[coverMode].label} ·{' '}
-                  {pages?.[0]?.title ? `샘플: "${pages[0].title}"` : '예시 텍스트'}
-                </div>
+                {pages && (
+                  <PageList
+                    pages={pages}
+                    selected={selected}
+                    onToggle={toggle}
+                    onToggleAll={toggleAll}
+                    perPageDesign={perPageDesign}
+                    onPickDesignForPage={(pageId, designId) =>
+                      setPerPageDesign((m) => ({ ...m, [pageId]: designId ?? undefined }))
+                    }
+                    defaultDesign={effectiveDefaultDesign}
+                    allDesigns={allDesigns}
+                    applying={applying}
+                    results={results}
+                    previewRatio={COVER_DIMENSIONS[coverMode].w / COVER_DIMENSIONS[coverMode].h}
+                  />
+                )}
               </div>
             </div>
-
-            {pagesLoading && <div className="ngc-caption">페이지 불러오는 중…</div>}
-            {pagesError && (
-              <div className="ngc-card p-4 text-[13px]" style={{ color: '#dd5b00' }}>
-                {pagesError}
-              </div>
-            )}
-
-            {pages && (
-              <PageList
-                pages={pages}
-                selected={selected}
-                onToggle={toggle}
-                onToggleAll={toggleAll}
-                perPageDesign={perPageDesign}
-                onPickDesignForPage={(pageId, designId) =>
-                  setPerPageDesign((m) => ({ ...m, [pageId]: designId ?? undefined }))
-                }
-                defaultDesign={effectiveDefaultDesign}
-                allDesigns={allDesigns}
-                applying={applying}
-                results={results}
-              />
-            )}
           </div>
         )}
       </section>
