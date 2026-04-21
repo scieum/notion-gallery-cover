@@ -75,9 +75,17 @@ export default function DesignGallery({
       {items.length === 0 && (
         <div className="ngc-card p-6 text-center">
           <div className="ngc-caption">
-            {tab === 'custom'
-              ? '저장된 커스텀 디자인이 없습니다. "새 디자인"으로 추가해보세요.'
-              : '해당 카테고리에 디자인이 없습니다.'}
+            {tab === 'custom' ? (
+              <>
+                저장된 커스텀 디자인이 없습니다. &quot;새 디자인&quot;으로 추가해보세요.
+                <div className="mt-2">
+                  <span className="ngc-badge">권장 사이즈</span>{' '}
+                  갤러리 커버 1200×900px · 페이지 커버 1500×600px
+                </div>
+              </>
+            ) : (
+              '해당 카테고리에 디자인이 없습니다.'
+            )}
           </div>
         </div>
       )}
