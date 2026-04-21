@@ -1,0 +1,171 @@
+'use client';
+
+import { FONT_OPTIONS } from '@/lib/font-registry';
+import type { CoverParams } from '@/lib/types';
+
+/** Same as CoverParams sans `name`, which the apply step always injects. */
+type DesignParams = Omit<CoverParams, 'name'>;
+
+interface Props {
+  /** Effective params (design defaults merged with current overrides). */
+  params: DesignParams | null;
+  /** Patch to merge into the override layer. */
+  onChange: (patch: Partial<CoverParams>) => void;
+  /** Wipe overrides back to the underlying design's defaults. */
+  onReset: () => void;
+}
+
+const SIZE_MIN = 48;
+const SIZE_MAX = 220;
+
+export default function TweakPanel({ params, onChange, onReset }: Props) {
+  if (!params) {
+    return (
+      <div className="ngc-card p-5">
+        <div className="ngc-caption">디자인을 먼저 선택하면 여기서 조정할 수 있어요.</div>
+      </div>
+    );
+  }
+
+  const style = params.style;
+  const size = params.size ?? 96;
+  const fg = params.fg ?? '#ffffff';
+  const bg = params.bg ?? '#1F1F1F';
+  const bg2 = params.bg2 ?? bg;
+  const angle = params.angle ?? 135;
+  const fontKey = params.font ?? 'pretendard';
+
+  return (
+    <div className="ngc-card p-5 space-y-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="ngc-h2 text-[15px]">조정</div>
+          <div className="ngc-caption mt-0.5">선택한 디자인 위에 덮어 씁니다.</div>
+        </div>
+        <button type="button" onClick={onReset} className="ngc-btn-ghost text-[12px]">
+          되돌리기
+        </button>
+      </div>
+
+      <Field label="폰트">
+        <select
+          className="ngc-input"
+          value={fontKey}
+          onChange={(e) => onChange({ font: e.target.value })}
+        >
+          {FONT_OPTIONS.map((f) => (
+            <option key={f.key} value={f.key}>
+              {f.label}
+            </option>
+          ))}
+        </select>
+      </Field>
+
+      <Field label={`글자 크기 · ${size}px`}>
+        <input
+          type="range"
+          min={SIZE_MIN}
+          max={SIZE_MAX}
+          step={2}
+          value={size}
+          onChange={(e) => onChange({ size: Number(e.target.value) })}
+          className="w-full"
+        />
+      </Field>
+
+      <ColorField label="글자 색" value={fg} onChange={(v) => onChange({ fg: v })} />
+      <ColorField label="배경색" value={bg} onChange={(v) => onChange({ bg: v })} />
+
+      {style === 'gradient' && (
+        <>
+          <ColorField label="배경색 2" value={bg2} onChange={(v) => onChange({ bg2: v })} />
+          <Field label={`각도 · ${angle}°`}>
+            <input
+              type="range"
+              min={0}
+              max={360}
+              step={5}
+              value={angle}
+              onChange={(e) => onChange({ angle: Number(e.target.value) })}
+              className="w-full"
+            />
+          </Field>
+        </>
+      )}
+
+      {style === 'emoji' && (
+        <>
+          <Field label="이모지">
+            <input
+              className="ngc-input"
+              maxLength={4}
+              value={params.emoji ?? '✨'}
+              onChange={(e) => onChange({ emoji: e.target.value })}
+            />
+          </Field>
+          <Field label="레이아웃">
+            <div className="flex gap-2">
+              {(['side', 'stack'] as const).map((l) => {
+                const active = (params.layout ?? 'side') === l;
+                return (
+                  <button
+                    key={l}
+                    type="button"
+                    onClick={() => onChange({ layout: l })}
+                    className={
+                      'text-[13px] px-3 py-1.5 rounded-full font-medium ' +
+                      (active
+                        ? 'bg-[var(--ngc-accent)] text-white'
+                        : 'bg-black/5 text-[var(--ngc-fg)]')
+                    }
+                  >
+                    {l === 'side' ? '나란히' : '위·아래'}
+                  </button>
+                );
+              })}
+            </div>
+          </Field>
+        </>
+      )}
+    </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="ngc-caption block mb-1.5">{label}</label>
+      {children}
+    </div>
+  );
+}
+
+function ColorField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <Field label={label}>
+      <div className="flex items-center gap-2">
+        <input
+          type="color"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-10 h-10 rounded-md border border-[var(--ngc-border)] cursor-pointer shrink-0"
+          style={{ padding: 0, background: 'transparent' }}
+        />
+        <input
+          className="ngc-input"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="#000000"
+        />
+      </div>
+    </Field>
+  );
+}

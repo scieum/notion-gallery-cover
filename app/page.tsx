@@ -3,14 +3,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { LogOut, Image as ImageIcon, PlayCircle, ArrowLeft, Zap, ZapOff, Loader2 } from 'lucide-react';
 import ConnectCard from '@/components/ConnectCard';
+import CoverPreview from '@/components/CoverPreview';
 import DatabasePicker from '@/components/DatabasePicker';
 import DesignGallery from '@/components/DesignGallery';
 import DesignEditor from '@/components/DesignEditor';
 import PageList from '@/components/PageList';
+import TweakPanel from '@/components/TweakPanel';
 import { BUILTIN_DESIGNS, findDesign } from '@/lib/designs';
 import { absoluteCoverUrl } from '@/lib/cover-url';
 import { COVER_DIMENSIONS } from '@/lib/types';
-import type { CoverMode, Design, NotionPageLite } from '@/lib/types';
+import type { CoverMode, CoverParams, Design, NotionPageLite } from '@/lib/types';
 
 interface DBItem {
   id: string;
@@ -38,6 +40,7 @@ export default function Page() {
   const [editorOpen, setEditorOpen] = useState(false);
 
   const [defaultDesignId, setDefaultDesignId] = useState<string | null>(null);
+  const [overrides, setOverrides] = useState<Partial<CoverParams>>({});
   const [perPageDesign, setPerPageDesign] = useState<Record<string, string | undefined>>({});
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
@@ -122,6 +125,31 @@ export default function Page() {
     () => (defaultDesignId ? findDesign(defaultDesignId, customs) ?? null : null),
     [defaultDesignId, customs],
   );
+  /**
+   * The default design with the inline tweak overrides merged on top. This
+   * is what the right-side preview renders and what every "default" page
+   * cover gets generated from. Per-page design swaps still bypass this.
+   */
+  const effectiveDefaultDesign = useMemo<Design | null>(() => {
+    if (!defaultDesign) return null;
+    return {
+      ...defaultDesign,
+      params: { ...defaultDesign.params, ...overrides },
+    };
+  }, [defaultDesign, overrides]);
+
+  // Auto-pick the first preset on first load so the right-side preview is
+  // never blank when the user lands on the design step.
+  useEffect(() => {
+    if (!defaultDesignId && BUILTIN_DESIGNS.length > 0) {
+      setDefaultDesignId(BUILTIN_DESIGNS[0].id);
+    }
+  }, [defaultDesignId]);
+
+  function pickDesign(d: Design) {
+    setDefaultDesignId(d.id);
+    setOverrides({}); // overrides belong to the previous design; start fresh
+  }
 
   async function logout() {
     await fetch('/api/auth/logout', { method: 'POST' });
@@ -145,7 +173,7 @@ export default function Page() {
   }
 
   function buildItems() {
-    if (!pages || !defaultDesign) return [] as { pageId: string; coverUrl: string }[];
+    if (!pages || !effectiveDefaultDesign) return [] as { pageId: string; coverUrl: string }[];
     const origin =
       (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_APP_URL) ||
       (typeof window !== 'undefined' ? window.location.origin : '');
@@ -153,8 +181,11 @@ export default function Page() {
     return pages
       .filter((p) => selected.has(p.id))
       .map((p) => {
+        // Per-page design swaps bypass the inline tweak overrides — the user
+        // explicitly chose a different preset for this row.
         const d =
-          (perPageDesign[p.id] && findDesign(perPageDesign[p.id]!, customs)) || defaultDesign;
+          (perPageDesign[p.id] && findDesign(perPageDesign[p.id]!, customs)) ||
+          effectiveDefaultDesign;
         const params = {
           ...d.params,
           name: p.title,
@@ -203,7 +234,7 @@ export default function Page() {
   // --- auto-apply: debounced effect that fires when inputs change
   useEffect(() => {
     if (!autoApply) return;
-    if (!pages || !defaultDesign) return;
+    if (!pages || !effectiveDefaultDesign) return;
     if (selected.size === 0) return;
 
     const items = buildItems();
@@ -221,7 +252,7 @@ export default function Page() {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoApply, pages, defaultDesignId, perPageDesign, selected, customs, coverMode]);
+  }, [autoApply, pages, defaultDesignId, perPageDesign, selected, customs, coverMode, overrides]);
 
   // ---- render
   if (authState === 'loading') {
@@ -325,7 +356,7 @@ export default function Page() {
                 )}
                 <button
                   onClick={apply}
-                  disabled={applying || !defaultDesign || selected.size === 0}
+                  disabled={applying || !effectiveDefaultDesign || selected.size === 0}
                   className="ngc-btn-primary inline-flex items-center gap-2"
                 >
                   <PlayCircle size={16} />
@@ -334,22 +365,51 @@ export default function Page() {
               </div>
             </div>
 
-            <div>
-              <div className="mb-4">
-                <div className="ngc-h2">디자인 선택</div>
-                <div className="ngc-caption mt-1">
-                  선택한 디자인이 기본값으로 쓰이고, 아래 테이블에서 페이지별로 변경할 수 있습니다.
+            {/* Design + tweak (left) | live preview (right) */}
+            <div className="grid gap-6 lg:grid-cols-[minmax(360px,420px)_1fr]">
+              <div className="space-y-6 min-w-0">
+                <div>
+                  <div className="ngc-h2">디자인 선택</div>
+                  <div className="ngc-caption mt-1">
+                    프리셋을 고르고, 아래 조정 패널에서 폰트·크기·색을 덮어 씁니다.
+                  </div>
+                  <div className="mt-4">
+                    <DesignGallery
+                      customs={customs}
+                      selectedId={defaultDesignId}
+                      sampleName={pages?.[0]?.title ?? '예시 텍스트'}
+                      previewRatio={COVER_DIMENSIONS[coverMode].w / COVER_DIMENSIONS[coverMode].h}
+                      onSelect={pickDesign}
+                      onAddCustomClick={() => setEditorOpen(true)}
+                      onDeleteCustom={(id) => setCustoms((cs) => cs.filter((c) => c.id !== id))}
+                    />
+                  </div>
+                </div>
+                <TweakPanel
+                  params={effectiveDefaultDesign?.params ?? null}
+                  onChange={(patch) => setOverrides((o) => ({ ...o, ...patch }))}
+                  onReset={() => setOverrides({})}
+                />
+              </div>
+
+              <div className="lg:sticky lg:top-20 self-start space-y-3 min-w-0">
+                <div className="ngc-h2">미리보기</div>
+                {effectiveDefaultDesign ? (
+                  <CoverPreview
+                    design={effectiveDefaultDesign}
+                    name={pages?.[0]?.title ?? '예시 텍스트'}
+                    ratio={COVER_DIMENSIONS[coverMode].w / COVER_DIMENSIONS[coverMode].h}
+                  />
+                ) : (
+                  <div className="ngc-card p-12 text-center">
+                    <div className="ngc-caption">왼쪽에서 디자인을 선택하세요</div>
+                  </div>
+                )}
+                <div className="ngc-caption">
+                  {COVER_DIMENSIONS[coverMode].label} ·{' '}
+                  {pages?.[0]?.title ? `샘플: "${pages[0].title}"` : '예시 텍스트'}
                 </div>
               </div>
-              <DesignGallery
-                customs={customs}
-                selectedId={defaultDesignId}
-                sampleName={pages?.[0]?.title ?? '예시 텍스트'}
-                previewRatio={COVER_DIMENSIONS[coverMode].w / COVER_DIMENSIONS[coverMode].h}
-                onSelect={(d) => setDefaultDesignId(d.id)}
-                onAddCustomClick={() => setEditorOpen(true)}
-                onDeleteCustom={(id) => setCustoms((cs) => cs.filter((c) => c.id !== id))}
-              />
             </div>
 
             {pagesLoading && <div className="ngc-caption">페이지 불러오는 중…</div>}
@@ -369,7 +429,7 @@ export default function Page() {
                 onPickDesignForPage={(pageId, designId) =>
                   setPerPageDesign((m) => ({ ...m, [pageId]: designId ?? undefined }))
                 }
-                defaultDesign={defaultDesign}
+                defaultDesign={effectiveDefaultDesign}
                 allDesigns={allDesigns}
                 applying={applying}
                 results={results}
