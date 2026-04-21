@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Database, RefreshCw, Plus, X, EyeOff, Link2 } from 'lucide-react';
+import { Database, RefreshCw, Plus, X, EyeOff, Link2, CheckSquare, Square } from 'lucide-react';
 
 interface Item {
   id: string;
@@ -22,16 +22,12 @@ const MANUAL_KEY = 'ngc:manual-dbs:v1';
  *   - "2e5137a3-05b8-812b-b4a9-000b2327f4d3"  (hyphenated)
  *   - "2e5137a305b8812bb4a9000b2327f4d3"      (32 hex chars)
  *   - "https://www.notion.so/Workspace/2e5137a305b8812bb4a9000b2327f4d3?v=..."
- * Returns the 32-char un-hyphenated id, or null if no id-shaped substring
- * is found. Caller can pass the result to Notion's API as-is — both
- * formats are accepted server-side.
+ * Returns the id verbatim from the input (lowercased), or null.
  */
 function extractDatabaseId(input: string): string | null {
   const cleaned = input.trim();
-  // Try hyphenated first.
   const hyphenated = cleaned.match(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/);
   if (hyphenated) return hyphenated[0].toLowerCase();
-  // Then bare 32-char hex.
   const bare = cleaned.match(/[0-9a-fA-F]{32}/);
   if (bare) return bare[0].toLowerCase();
   return null;
@@ -49,6 +45,10 @@ export default function DatabasePicker({ onPick }: Props) {
   const [idInput, setIdInput] = useState('');
   const [idAdding, setIdAdding] = useState(false);
   const [idError, setIdError] = useState<string | null>(null);
+
+  // Multi-select for bulk hide / remove
+  const [selectMode, setSelectMode] = useState(false);
+  const [bulkSelected, setBulkSelected] = useState<Set<string>>(new Set());
 
   // Load persisted state on mount.
   useEffect(() => {
@@ -96,6 +96,9 @@ export default function DatabasePicker({ onPick }: Props) {
   function unhideAll() {
     persistHidden(new Set());
   }
+  function removeManual(id: string) {
+    persistManual(manualItems.filter((m) => m.id !== id));
+  }
 
   async function load() {
     setLoading(true);
@@ -130,10 +133,8 @@ export default function DatabasePicker({ onPick }: Props) {
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error ?? '조회 실패');
       const db: Item = data.database;
-      // Dedupe by id within manual list.
       const next = [db, ...manualItems.filter((m) => m.id !== db.id)];
       persistManual(next);
-      // Also un-hide it if previously hidden, so it shows up immediately.
       if (hiddenIds.has(db.id)) unhide(db.id);
       setIdInput('');
     } catch (err: any) {
@@ -141,10 +142,6 @@ export default function DatabasePicker({ onPick }: Props) {
     } finally {
       setIdAdding(false);
     }
-  }
-
-  function removeManual(id: string) {
-    persistManual(manualItems.filter((m) => m.id !== id));
   }
 
   // Merge searched + manual, dedupe by id (search wins for title/icon freshness).
@@ -173,9 +170,49 @@ export default function DatabasePicker({ onPick }: Props) {
 
   const manualIdSet = useMemo(() => new Set(manualItems.map((m) => m.id)), [manualItems]);
 
+  // Bulk-select helpers
+  function toggleBulk(id: string) {
+    setBulkSelected((s) => {
+      const next = new Set(s);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+  function selectAllVisible() {
+    if (!visibleItems) return;
+    setBulkSelected(new Set(visibleItems.map((i) => i.id)));
+  }
+  function clearBulk() {
+    setBulkSelected(new Set());
+  }
+  function exitSelectMode() {
+    setSelectMode(false);
+    setBulkSelected(new Set());
+  }
+  function bulkHide() {
+    const next = new Set(hiddenIds);
+    bulkSelected.forEach((id) => next.add(id));
+    persistHidden(next);
+    exitSelectMode();
+  }
+  function bulkRemoveManual() {
+    // Only manual items can be hard-removed; searched ones get hidden instead.
+    const toRemoveManual = manualItems.filter((m) => bulkSelected.has(m.id));
+    const next = manualItems.filter((m) => !bulkSelected.has(m.id));
+    if (toRemoveManual.length > 0) persistManual(next);
+    exitSelectMode();
+  }
+
+  const bulkSelectedCount = bulkSelected.size;
+  const bulkSelectedManualCount = useMemo(
+    () => Array.from(bulkSelected).filter((id) => manualIdSet.has(id)).length,
+    [bulkSelected, manualIdSet],
+  );
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <div>
           <div className="ngc-h2">데이터베이스 선택</div>
           <div className="ngc-caption mt-1">
@@ -183,51 +220,109 @@ export default function DatabasePicker({ onPick }: Props) {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <a
-            href="/api/auth/login"
-            className="ngc-btn-ghost inline-flex items-center gap-1.5"
-            title="Notion 인증을 다시 거쳐 페이지/데이터베이스를 추가합니다"
-          >
-            <Plus size={14} /> 데이터베이스 추가
-          </a>
-          <button
-            type="button"
-            onClick={load}
-            className="ngc-btn-ghost inline-flex items-center gap-1.5"
-          >
-            <RefreshCw size={14} /> 새로고침
-          </button>
+          {!selectMode && (
+            <>
+              <a
+                href="/api/auth/login"
+                className="ngc-btn-ghost inline-flex items-center gap-1.5"
+                title="Notion 인증을 다시 거쳐 페이지/데이터베이스를 추가합니다"
+              >
+                <Plus size={14} /> 데이터베이스 추가
+              </a>
+              <button
+                type="button"
+                onClick={load}
+                className="ngc-btn-ghost inline-flex items-center gap-1.5"
+              >
+                <RefreshCw size={14} /> 새로고침
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectMode(true)}
+                className="ngc-btn-ghost inline-flex items-center gap-1.5"
+              >
+                <CheckSquare size={14} /> 선택
+              </button>
+            </>
+          )}
+          {selectMode && (
+            <button
+              type="button"
+              onClick={exitSelectMode}
+              className="ngc-btn-ghost inline-flex items-center gap-1.5"
+            >
+              <X size={14} /> 선택 종료
+            </button>
+          )}
         </div>
       </div>
 
       {/* Add by ID — for DBs that Notion search misses (e.g. inline DBs). */}
-      <form
-        onSubmit={addById}
-        className="ngc-soft p-4 mb-5 flex flex-wrap items-center gap-2"
-      >
-        <Link2 size={16} className="text-[var(--ngc-fg-muted)] shrink-0" />
-        <input
-          type="text"
-          className="ngc-input flex-1 min-w-[260px]"
-          placeholder="데이터베이스 ID 또는 URL 붙여넣기 (예: 2e5137a3-05b8-...)"
-          value={idInput}
-          onChange={(e) => setIdInput(e.target.value)}
-          autoComplete="off"
-        />
-        <button
-          type="submit"
-          className="ngc-btn-primary inline-flex items-center gap-1.5"
-          disabled={idAdding || idInput.trim().length === 0}
+      {!selectMode && (
+        <form
+          onSubmit={addById}
+          className="ngc-soft p-4 mb-5 flex flex-wrap items-center gap-2"
         >
-          <Plus size={14} />
-          {idAdding ? '확인 중…' : '추가'}
-        </button>
-        {idError && (
-          <div className="basis-full text-[12px] mt-1" style={{ color: '#dd5b00' }}>
-            {idError}
-          </div>
-        )}
-      </form>
+          <Link2 size={16} className="text-[var(--ngc-fg-muted)] shrink-0" />
+          <input
+            type="text"
+            className="ngc-input flex-1 min-w-[260px]"
+            placeholder="데이터베이스 ID 또는 URL 붙여넣기 (예: 2e5137a3-05b8-...)"
+            value={idInput}
+            onChange={(e) => setIdInput(e.target.value)}
+            autoComplete="off"
+          />
+          <button
+            type="submit"
+            className="ngc-btn-primary inline-flex items-center gap-1.5"
+            disabled={idAdding || idInput.trim().length === 0}
+          >
+            <Plus size={14} />
+            {idAdding ? '확인 중…' : '추가'}
+          </button>
+          {idError && (
+            <div className="basis-full text-[12px] mt-1" style={{ color: '#dd5b00' }}>
+              {idError}
+            </div>
+          )}
+        </form>
+      )}
+
+      {/* Bulk action bar */}
+      {selectMode && (
+        <div className="ngc-soft p-3 mb-5 flex flex-wrap items-center gap-3 text-[13px]">
+          <span className="font-medium">{bulkSelectedCount}개 선택</span>
+          <button type="button" onClick={selectAllVisible} className="ngc-btn-ghost text-[13px]">
+            전체 선택
+          </button>
+          <button
+            type="button"
+            onClick={clearBulk}
+            disabled={bulkSelectedCount === 0}
+            className="ngc-btn-ghost text-[13px]"
+          >
+            해제
+          </button>
+          <div className="flex-1" />
+          <button
+            type="button"
+            onClick={bulkHide}
+            disabled={bulkSelectedCount === 0}
+            className="ngc-btn-secondary inline-flex items-center gap-1.5"
+          >
+            <EyeOff size={14} /> 숨기기 ({bulkSelectedCount})
+          </button>
+          <button
+            type="button"
+            onClick={bulkRemoveManual}
+            disabled={bulkSelectedManualCount === 0}
+            className="ngc-btn-secondary inline-flex items-center gap-1.5"
+            title="수동 추가 항목만 영구 삭제됩니다"
+          >
+            <X size={14} /> 수동 항목 제거 ({bulkSelectedManualCount})
+          </button>
+        </div>
+      )}
 
       {loading && !mergedItems && <div className="ngc-caption">불러오는 중…</div>}
       {error && (
@@ -255,22 +350,36 @@ export default function DatabasePicker({ onPick }: Props) {
           {visibleItems.map((it) => {
             const isHidden = hiddenIds.has(it.id);
             const isManual = manualIdSet.has(it.id);
+            const isBulkSelected = bulkSelected.has(it.id);
             return (
               <div key={it.id} className="relative group">
                 <button
-                  onClick={() => onPick(it)}
+                  onClick={() => (selectMode ? toggleBulk(it.id) : onPick(it))}
                   className={
                     'ngc-card ngc-card-hoverable p-4 text-left flex items-start gap-3 w-full ' +
-                    (isHidden ? 'opacity-50' : '')
+                    (isHidden ? 'opacity-50 ' : '') +
+                    (selectMode && isBulkSelected
+                      ? 'ring-2 ring-[var(--ngc-accent)] '
+                      : '')
                   }
                 >
-                  <div className="shrink-0 w-8 h-8 rounded-md flex items-center justify-center ngc-section-warm text-[18px]">
-                    {it.icon && !it.icon.startsWith('http') ? (
-                      <span>{it.icon}</span>
-                    ) : (
-                      <Database size={16} />
-                    )}
-                  </div>
+                  {selectMode ? (
+                    <div className="shrink-0 w-8 h-8 flex items-center justify-center text-[var(--ngc-fg-muted)]">
+                      {isBulkSelected ? (
+                        <CheckSquare size={20} className="text-[var(--ngc-accent)]" />
+                      ) : (
+                        <Square size={20} />
+                      )}
+                    </div>
+                  ) : (
+                    <div className="shrink-0 w-8 h-8 rounded-md flex items-center justify-center ngc-section-warm text-[18px]">
+                      {it.icon && !it.icon.startsWith('http') ? (
+                        <span>{it.icon}</span>
+                      ) : (
+                        <Database size={16} />
+                      )}
+                    </div>
+                  )}
                   <div className="min-w-0 pr-6">
                     <div className="text-[15px] font-semibold truncate flex items-center gap-1.5">
                       {it.title}
@@ -286,39 +395,41 @@ export default function DatabasePicker({ onPick }: Props) {
                     <div className="ngc-caption truncate">{it.id}</div>
                   </div>
                 </button>
-                {isHidden ? (
-                  <button
-                    type="button"
-                    onClick={() => unhide(it.id)}
-                    className="absolute top-2 right-2 px-2 py-1 rounded-md bg-white/95 backdrop-blur border border-[var(--ngc-border)] text-[12px] opacity-0 group-hover:opacity-100 transition-opacity"
-                    aria-label="다시 표시"
-                    title="목록에 다시 표시"
-                  >
-                    되돌리기
-                  </button>
-                ) : (
-                  <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {isManual && (
-                      <button
-                        type="button"
-                        onClick={() => removeManual(it.id)}
-                        className="px-2 py-1 rounded-md bg-white/95 backdrop-blur border border-[var(--ngc-border)] text-[12px]"
-                        aria-label="수동 추가 항목 삭제"
-                        title="수동 추가 항목을 목록에서 제거"
-                      >
-                        제거
-                      </button>
-                    )}
+                {!selectMode && (
+                  isHidden ? (
                     <button
                       type="button"
-                      onClick={() => hide(it.id)}
-                      className="p-1.5 rounded-md bg-white/95 backdrop-blur border border-[var(--ngc-border)]"
-                      aria-label="목록에서 숨기기"
-                      title="이 데이터베이스를 목록에서 숨기기"
+                      onClick={() => unhide(it.id)}
+                      className="absolute top-2 right-2 px-2 py-1 rounded-md bg-white/95 backdrop-blur border border-[var(--ngc-border)] text-[12px] opacity-0 group-hover:opacity-100 transition-opacity"
+                      aria-label="다시 표시"
+                      title="목록에 다시 표시"
                     >
-                      <X size={14} />
+                      되돌리기
                     </button>
-                  </div>
+                  ) : (
+                    <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {isManual && (
+                        <button
+                          type="button"
+                          onClick={() => removeManual(it.id)}
+                          className="px-2 py-1 rounded-md bg-white/95 backdrop-blur border border-[var(--ngc-border)] text-[12px]"
+                          aria-label="수동 추가 항목 삭제"
+                          title="수동 추가 항목을 목록에서 제거"
+                        >
+                          제거
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => hide(it.id)}
+                        className="p-1.5 rounded-md bg-white/95 backdrop-blur border border-[var(--ngc-border)]"
+                        aria-label="목록에서 숨기기"
+                        title="이 데이터베이스를 목록에서 숨기기"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  )
                 )}
               </div>
             );

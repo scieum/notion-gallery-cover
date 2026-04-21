@@ -266,10 +266,22 @@ export default function Page() {
     <main className="min-h-screen">
       <header className="sticky top-0 z-10 backdrop-blur bg-white/80 border-b border-[var(--ngc-border)]">
         <div className="max-w-[1800px] mx-auto px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              // Logo → "home" = the post-auth DB picker. Clears the
+              // currently-open DB and any per-DB state so the picker view
+              // shows fresh.
+              setDb(null);
+              setPages(null);
+              setResults({});
+            }}
+            className="flex items-center gap-2 -ml-2 px-2 py-1 rounded-md hover:bg-black/5 transition-colors"
+            aria-label="홈으로"
+          >
             <ImageIcon size={18} />
             <div className="font-semibold tracking-tight">NotionTalk Cover Maker</div>
-          </div>
+          </button>
           {authState === 'authed' && (
             <div className="flex items-center gap-3">
               {workspaceName && <span className="ngc-caption">{workspaceName}</span>}
