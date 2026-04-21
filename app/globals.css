@@ -155,4 +155,10 @@
   .ngc-section-warm {
     background: var(--ngc-bg-warm);
   }
+  /* Borderless section with a faint warm tint — used instead of ngc-card
+     when we want grouping without adding another visual frame. */
+  .ngc-soft {
+    background: var(--ngc-bg-warm);
+    border-radius: 14px;
+  }
 }

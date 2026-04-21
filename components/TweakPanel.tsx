@@ -21,7 +21,7 @@ const SIZE_MAX = 220;
 export default function TweakPanel({ params, onChange, onReset }: Props) {
   if (!params) {
     return (
-      <div className="ngc-card p-5">
+      <div className="ngc-soft p-6">
         <div className="ngc-caption">디자인을 먼저 선택하면 여기서 조정할 수 있어요.</div>
       </div>
     );
@@ -36,7 +36,7 @@ export default function TweakPanel({ params, onChange, onReset }: Props) {
   const fontKey = params.font ?? 'pretendard';
 
   return (
-    <div className="ngc-card p-5 space-y-5">
+    <div className="ngc-soft p-6 space-y-7">
       <div className="flex items-center justify-between">
         <div>
           <div className="ngc-h2 text-[15px]">조정</div>
@@ -73,11 +73,13 @@ export default function TweakPanel({ params, onChange, onReset }: Props) {
         />
       </Field>
 
-      <ColorField label="글자 색" value={fg} onChange={(v) => onChange({ fg: v })} />
-      <ColorField label="배경색" value={bg} onChange={(v) => onChange({ bg: v })} />
+      <div className="grid grid-cols-2 gap-4">
+        <ColorField label="글자 색" value={fg} onChange={(v) => onChange({ fg: v })} />
+        <ColorField label="배경색" value={bg} onChange={(v) => onChange({ bg: v })} />
+      </div>
 
       {style === 'gradient' && (
-        <>
+        <div className="grid grid-cols-2 gap-4">
           <ColorField label="배경색 2" value={bg2} onChange={(v) => onChange({ bg2: v })} />
           <Field label={`각도 · ${angle}°`}>
             <input
@@ -90,11 +92,11 @@ export default function TweakPanel({ params, onChange, onReset }: Props) {
               className="w-full"
             />
           </Field>
-        </>
+        </div>
       )}
 
       {style === 'emoji' && (
-        <>
+        <div className="grid grid-cols-2 gap-4">
           <Field label="이모지">
             <input
               className="ngc-input"
@@ -116,7 +118,7 @@ export default function TweakPanel({ params, onChange, onReset }: Props) {
                       'text-[13px] px-3 py-1.5 rounded-full font-medium ' +
                       (active
                         ? 'bg-[var(--ngc-accent)] text-white'
-                        : 'bg-black/5 text-[var(--ngc-fg)]')
+                        : 'bg-white text-[var(--ngc-fg)]')
                     }
                   >
                     {l === 'side' ? '나란히' : '위·아래'}
@@ -125,7 +127,7 @@ export default function TweakPanel({ params, onChange, onReset }: Props) {
               })}
             </div>
           </Field>
-        </>
+        </div>
       )}
     </div>
   );
@@ -134,7 +136,7 @@ export default function TweakPanel({ params, onChange, onReset }: Props) {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="ngc-caption block mb-1.5">{label}</label>
+      <label className="ngc-caption block mb-2">{label}</label>
       {children}
     </div>
   );
@@ -156,8 +158,8 @@ function ColorField({
           type="color"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-10 h-10 rounded-md border border-[var(--ngc-border)] cursor-pointer shrink-0"
-          style={{ padding: 0, background: 'transparent' }}
+          className="w-9 h-9 rounded-md border border-[var(--ngc-border)] cursor-pointer shrink-0 bg-white"
+          style={{ padding: 0 }}
         />
         <input
           className="ngc-input"

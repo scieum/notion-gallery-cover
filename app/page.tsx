@@ -265,7 +265,7 @@ export default function Page() {
   return (
     <main className="min-h-screen">
       <header className="sticky top-0 z-10 backdrop-blur bg-white/80 border-b border-[var(--ngc-border)]">
-        <div className="max-w-[1800px] mx-auto px-6 py-3 flex items-center justify-between">
+        <div className="max-w-[1800px] mx-auto px-8 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ImageIcon size={18} />
             <div className="font-semibold tracking-tight">Notion Gallery Cover</div>
@@ -281,7 +281,7 @@ export default function Page() {
         </div>
       </header>
 
-      <section className="max-w-[1800px] mx-auto px-6 py-8">
+      <section className="max-w-[1800px] mx-auto px-8 py-12">
         {authState === 'anon' && <ConnectCard />}
 
         {authState === 'authed' && !db && (
@@ -289,9 +289,9 @@ export default function Page() {
         )}
 
         {authState === 'authed' && db && (
-          <div className="space-y-8">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+          <div className="space-y-10">
+            <div className="flex items-end justify-between gap-6 flex-wrap">
+              <div className="flex items-center gap-3 min-w-0">
                 <button
                   className="ngc-btn-ghost inline-flex items-center gap-1.5"
                   onClick={() => {
@@ -302,12 +302,12 @@ export default function Page() {
                 >
                   <ArrowLeft size={14} /> 다른 DB 선택
                 </button>
-                <div>
-                  <div className="ngc-display text-[28px]">{db.title}</div>
-                  <div className="ngc-caption">{db.id}</div>
+                <div className="min-w-0">
+                  <div className="ngc-display text-[32px] truncate">{db.title}</div>
+                  <div className="ngc-caption truncate">{db.id}</div>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
                 <div
                   className="inline-flex items-center rounded-full border border-[var(--ngc-border)] bg-white p-0.5 text-[13px] font-medium"
                   role="group"
@@ -365,8 +365,8 @@ export default function Page() {
             </div>
 
             {/* Tweak + design grid (left) | page list (right) */}
-            <div className="grid gap-6 lg:grid-cols-[minmax(380px,460px)_1fr]">
-              <div className="space-y-6 min-w-0">
+            <div className="grid gap-10 lg:grid-cols-[minmax(380px,460px)_1fr]">
+              <div className="space-y-8 min-w-0">
                 <TweakPanel
                   params={effectiveDefaultDesign?.params ?? null}
                   onChange={(patch) => setOverrides((o) => ({ ...o, ...patch }))}
