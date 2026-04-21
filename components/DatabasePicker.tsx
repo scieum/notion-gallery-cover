@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Database, RefreshCw } from 'lucide-react';
+import { Database, RefreshCw, Plus } from 'lucide-react';
 
 interface Item {
   id: string;
@@ -44,12 +44,25 @@ export default function DatabasePicker({ onPick }: Props) {
         <div>
           <div className="ngc-h2">데이터베이스 선택</div>
           <div className="ngc-caption mt-1">
-            integration에 연결된 데이터베이스 목록입니다.
+            인증 시 선택한 페이지에 포함된 데이터베이스 목록입니다.
           </div>
         </div>
-        <button type="button" onClick={load} className="ngc-btn-ghost inline-flex items-center gap-1.5">
-          <RefreshCw size={14} /> 새로고침
-        </button>
+        <div className="flex items-center gap-2">
+          <a
+            href="/api/auth/login"
+            className="ngc-btn-ghost inline-flex items-center gap-1.5"
+            title="Notion 인증을 다시 거쳐 페이지/데이터베이스를 추가합니다"
+          >
+            <Plus size={14} /> 데이터베이스 추가
+          </a>
+          <button
+            type="button"
+            onClick={load}
+            className="ngc-btn-ghost inline-flex items-center gap-1.5"
+          >
+            <RefreshCw size={14} /> 새로고침
+          </button>
+        </div>
       </div>
 
       {loading && !items && <div className="ngc-caption">불러오는 중…</div>}
@@ -62,9 +75,15 @@ export default function DatabasePicker({ onPick }: Props) {
       {items && items.length === 0 && (
         <div className="ngc-card p-6">
           <div className="text-[15px] font-semibold mb-1">접근 가능한 데이터베이스가 없습니다</div>
-          <div className="ngc-caption">
-            Notion에서 해당 integration을 데이터베이스에 초대했는지 확인해주세요.
+          <div className="ngc-caption mb-4">
+            Notion 인증 화면에서 <strong>데이터베이스 자체</strong> 또는 <strong>데이터베이스를 포함한 페이지</strong>를 선택해야 보입니다. 일반 페이지만 선택하면 여기에 아무것도 안 떠요.
           </div>
+          <a
+            href="/api/auth/login"
+            className="ngc-btn-primary inline-flex items-center gap-2"
+          >
+            <Plus size={16} /> 다시 선택해서 추가
+          </a>
         </div>
       )}
 
