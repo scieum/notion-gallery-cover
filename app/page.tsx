@@ -290,24 +290,23 @@ export default function Page() {
 
         {authState === 'authed' && db && (
           <div className="space-y-10">
-            <div className="flex items-end justify-between gap-6 flex-wrap">
-              <div className="flex items-center gap-3 min-w-0">
-                <button
-                  className="ngc-btn-ghost inline-flex items-center gap-1.5"
-                  onClick={() => {
-                    setDb(null);
-                    setPages(null);
-                    setResults({});
-                  }}
-                >
-                  <ArrowLeft size={14} /> 다른 DB 선택
-                </button>
+            <div>
+              <button
+                className="ngc-btn-ghost inline-flex items-center gap-1.5 -ml-2 mb-3"
+                onClick={() => {
+                  setDb(null);
+                  setPages(null);
+                  setResults({});
+                }}
+              >
+                <ArrowLeft size={14} /> 다른 DB 선택
+              </button>
+              <div className="flex items-end justify-between gap-6 flex-wrap">
                 <div className="min-w-0">
                   <div className="ngc-display text-[32px] truncate">{db.title}</div>
                   <div className="ngc-caption truncate">{db.id}</div>
                 </div>
-              </div>
-              <div className="flex items-center gap-3 flex-wrap">
+                <div className="flex items-center gap-3 flex-wrap">
                 <div
                   className="inline-flex items-center rounded-full border border-[var(--ngc-border)] bg-white p-0.5 text-[13px] font-medium"
                   role="group"
@@ -361,6 +360,7 @@ export default function Page() {
                   <PlayCircle size={16} />
                   {applying ? '적용 중…' : `지금 적용 (${selected.size})`}
                 </button>
+                </div>
               </div>
             </div>
 

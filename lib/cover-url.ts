@@ -14,7 +14,9 @@ export function coverSearchParams(params: CoverParams): URLSearchParams {
 }
 
 export function coverPath(params: CoverParams): string {
-  return `/api/cover?${coverSearchParams(params).toString()}`;
+  // /cover.png is a rewrite to /api/cover (see next.config.mjs). The .png
+  // suffix is what gets Notion's gallery card preview to render the image.
+  return `/cover.png?${coverSearchParams(params).toString()}`;
 }
 
 export function absoluteCoverUrl(origin: string, params: CoverParams): string {

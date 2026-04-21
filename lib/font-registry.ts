@@ -32,15 +32,9 @@ export const FONT_REGISTRY: Record<string, FontDef> = {
       800: 'https://cdn.jsdelivr.net/gh/sun-typeface/SUIT/fonts/static/woff2/SUIT-ExtraBold.woff2',
     },
   },
-  paperozi: {
-    family: 'Paperozi',
-    label: 'Paperozi (Paperlogy)',
-    weights: {
-      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-4Regular.woff2',
-      700: 'https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2',
-      800: 'https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-8ExtraBold.woff2',
-    },
-  },
+  // Paperozi (Paperlogy) — disabled. The projectnoonnu woff2 builds
+  // decompress fine via wawoff2 but satori errors when parsing the
+  // resulting TTF for every weight (still under investigation).
   gmarketsans: {
     family: 'GMarketSans',
     label: 'G마켓 산스',
