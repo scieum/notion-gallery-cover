@@ -48,6 +48,12 @@ function parse(req: NextRequest): CoverParams {
     w: num('w'),
     h: num('h'),
     font: q.get('font') ?? undefined,
+    subtitleFont: q.get('subtitleFont') ?? undefined,
+    captionFont: q.get('captionFont') ?? undefined,
+    subtitleSize: num('subtitleSize'),
+    captionSize: num('captionSize'),
+    subtitleFg: q.get('subtitleFg') ?? undefined,
+    captionFg: q.get('captionFg') ?? undefined,
     letterSpacing: num('letterSpacing'),
     lineHeight: num('lineHeight'),
     italic: q.get('italic') === 'true' ? true : undefined,
@@ -92,7 +98,17 @@ export async function GET(req: NextRequest) {
   const size = p.size ?? 96;
   const fontKey = p.font && FONT_REGISTRY[p.font] ? p.font : DEFAULT_FONT_KEY;
   const fontFamily = FONT_REGISTRY[fontKey].family;
-  const fonts = await loadFontByKey(fontKey);
+  // Resolve per-line font keys; subtitle/caption fall back to the title's.
+  const subFontKey =
+    p.subtitleFont && FONT_REGISTRY[p.subtitleFont] ? p.subtitleFont : fontKey;
+  const capFontKey =
+    p.captionFont && FONT_REGISTRY[p.captionFont] ? p.captionFont : fontKey;
+  const subFontFamily = FONT_REGISTRY[subFontKey].family;
+  const capFontFamily = FONT_REGISTRY[capFontKey].family;
+  // Load every distinct font in parallel and concat into satori's fonts arg.
+  const distinctFontKeys = Array.from(new Set([fontKey, subFontKey, capFontKey]));
+  const loadedFontGroups = await Promise.all(distinctFontKeys.map((k) => loadFontByKey(k)));
+  const fonts = loadedFontGroups.flat();
 
   const bg = background(p);
   const overlayStyle: Record<string, string> =
@@ -108,8 +124,8 @@ export async function GET(req: NextRequest) {
   const padding = Math.round(Math.min(width, height) * 0.12);
 
   // Title stack — 대제목 / 중제목 / 소제목. Empty slots are filtered.
-  const subSize = Math.round(size * 0.55);
-  const capSize = Math.round(size * 0.35);
+  const subSize = p.subtitleSize ?? Math.round(size * 0.55);
+  const capSize = p.captionSize ?? Math.round(size * 0.35);
   const stackGap = Math.round(size * 0.18);
   const baseWeight = p.weight ?? 800;
   const subWeight = Math.max(400, baseWeight - 100);
@@ -118,10 +134,39 @@ export async function GET(req: NextRequest) {
   const letterSpacingEm = p.letterSpacing ?? -0.02;
   const letterSpacing = `${letterSpacingEm}em`;
   const fontStyle = p.italic ? 'italic' : 'normal';
-  const lines: Array<{ text: string; fontSize: number; fontWeight: number }> = [];
-  if (p.name) lines.push({ text: p.name, fontSize: size, fontWeight: baseWeight });
-  if (p.subtitle) lines.push({ text: p.subtitle, fontSize: subSize, fontWeight: subWeight });
-  if (p.caption) lines.push({ text: p.caption, fontSize: capSize, fontWeight: capWeight });
+  const subColor = p.subtitleFg ?? fg;
+  const capColor = p.captionFg ?? fg;
+  const lines: Array<{
+    text: string;
+    fontSize: number;
+    fontWeight: number;
+    fontFamily: string;
+    color: string;
+  }> = [];
+  if (p.name)
+    lines.push({
+      text: p.name,
+      fontSize: size,
+      fontWeight: baseWeight,
+      fontFamily,
+      color: fg,
+    });
+  if (p.subtitle)
+    lines.push({
+      text: p.subtitle,
+      fontSize: subSize,
+      fontWeight: subWeight,
+      fontFamily: subFontFamily,
+      color: subColor,
+    });
+  if (p.caption)
+    lines.push({
+      text: p.caption,
+      fontSize: capSize,
+      fontWeight: capWeight,
+      fontFamily: capFontFamily,
+      color: capColor,
+    });
 
   function TitleStack({ maxWidthPx }: { maxWidthPx: number }) {
     return (
@@ -152,11 +197,12 @@ export async function GET(req: NextRequest) {
               width: '100%',
               fontSize: l.fontSize,
               fontWeight: l.fontWeight,
+              fontFamily: l.fontFamily,
               lineHeight,
               letterSpacing,
               fontStyle,
               textAlign: 'center',
-              color: fg,
+              color: l.color,
               // keep-all = don't break inside Korean words; break only at
               // spaces. Falls back to character-level break if a single
               // unbroken token is wider than the box.

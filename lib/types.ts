@@ -30,8 +30,21 @@ export interface CoverParams {
   layout?: EmojiLayout;
   w?: number;
   h?: number;
-  /** Font registry key — see lib/fonts.ts FONT_REGISTRY. */
+  /** Font registry key for the title (대제목). Subtitle/caption fall back
+   *  to this if their own font isn't set. */
   font?: string;
+  /** Per-line font key for 중제목 (subtitle). Falls back to `font`. */
+  subtitleFont?: string;
+  /** Per-line font key for 소제목 (caption). Falls back to `font`. */
+  captionFont?: string;
+  /** Per-line size for 중제목. Falls back to size * 0.55. */
+  subtitleSize?: number;
+  /** Per-line size for 소제목. Falls back to size * 0.35. */
+  captionSize?: number;
+  /** Per-line color for 중제목. Falls back to `fg`. */
+  subtitleFg?: string;
+  /** Per-line color for 소제목. Falls back to `fg`. */
+  captionFg?: string;
   /** Letter spacing in em units (e.g. -0.02 ≈ default tight headline). */
   letterSpacing?: number;
   /** Unit-less line height (e.g. 1.1). */

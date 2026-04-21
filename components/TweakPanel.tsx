@@ -1,7 +1,8 @@
 'use client';
 
-import { FONT_OPTIONS, FONT_REGISTRY } from '@/lib/font-registry';
+import { useState } from 'react';
 import type { CoverParams } from '@/lib/types';
+import FontPicker from './FontPicker';
 
 /** Same as CoverParams sans `name`, which the apply step always injects. */
 type DesignParams = Omit<CoverParams, 'name'>;
@@ -15,10 +16,24 @@ interface Props {
   onReset: () => void;
 }
 
-const SIZE_MIN = 48;
+const SIZE_MIN = 24;
 const SIZE_MAX = 220;
 
+type LineKey = 'title' | 'subtitle' | 'caption';
+
+/** Per-line tab → which CoverParams keys it edits. */
+const LINE_KEYS: Record<
+  LineKey,
+  { font: keyof CoverParams; size: keyof CoverParams; fg: keyof CoverParams; label: string }
+> = {
+  title: { font: 'font', size: 'size', fg: 'fg', label: '대제목' },
+  subtitle: { font: 'subtitleFont', size: 'subtitleSize', fg: 'subtitleFg', label: '중제목' },
+  caption: { font: 'captionFont', size: 'captionSize', fg: 'captionFg', label: '소제목' },
+};
+
 export default function TweakPanel({ params, onChange, onReset }: Props) {
+  const [activeTab, setActiveTab] = useState<LineKey>('title');
+
   if (!params) {
     return (
       <div className="ngc-soft p-6">
@@ -27,13 +42,36 @@ export default function TweakPanel({ params, onChange, onReset }: Props) {
     );
   }
 
+  // Title is the source of truth; subtitle/caption inherit when their own
+  // fields are unset. The auto sizes match what the cover route uses.
+  const baseSize = params.size ?? 96;
+  const baseFont = params.font ?? 'pretendard';
+  const baseFg = params.fg ?? '#ffffff';
+
+  const linesOf: Record<LineKey, { font: string; size: number; fg: string }> = {
+    title: { font: baseFont, size: baseSize, fg: baseFg },
+    subtitle: {
+      font: params.subtitleFont ?? baseFont,
+      size: params.subtitleSize ?? Math.round(baseSize * 0.55),
+      fg: params.subtitleFg ?? baseFg,
+    },
+    caption: {
+      font: params.captionFont ?? baseFont,
+      size: params.captionSize ?? Math.round(baseSize * 0.35),
+      fg: params.captionFg ?? baseFg,
+    },
+  };
+
+  const keys = LINE_KEYS[activeTab];
+  const line = linesOf[activeTab];
+  function setLineField(field: 'font' | 'size' | 'fg', value: string | number) {
+    onChange({ [keys[field]]: value } as Partial<CoverParams>);
+  }
+
   const style = params.style;
-  const size = params.size ?? 96;
-  const fg = params.fg ?? '#ffffff';
   const bg = params.bg ?? '#1F1F1F';
   const bg2 = params.bg2 ?? bg;
   const angle = params.angle ?? 135;
-  const fontKey = params.font ?? 'pretendard';
   const letterSpacing = params.letterSpacing ?? -0.02;
   const lineHeight = params.lineHeight ?? 1.1;
   const italic = params.italic ?? false;
@@ -51,37 +89,57 @@ export default function TweakPanel({ params, onChange, onReset }: Props) {
         </button>
       </div>
 
-      <Field label="폰트">
-        <select
-          className="ngc-input"
-          value={fontKey}
-          onChange={(e) => onChange({ font: e.target.value })}
-          style={{ fontFamily: `"${FONT_REGISTRY[fontKey]?.family ?? 'Pretendard'}"` }}
+      {/* Per-line typography tabs (대제목 / 중제목 / 소제목). */}
+      <div>
+        <div
+          className="inline-flex items-center rounded-full border border-[var(--ngc-border)] bg-white p-0.5 text-[12px] font-medium mb-4"
+          role="tablist"
         >
-          {FONT_OPTIONS.map((f) => (
-            <option
-              key={f.key}
-              value={f.key}
-              style={{ fontFamily: `"${f.family}"`, fontSize: 16 }}
+          {(['title', 'subtitle', 'caption'] as LineKey[]).map((k) => (
+            <button
+              key={k}
+              type="button"
+              role="tab"
+              aria-selected={activeTab === k}
+              onClick={() => setActiveTab(k)}
+              className={
+                'px-3 py-1 rounded-full transition-colors ' +
+                (activeTab === k
+                  ? 'bg-[var(--ngc-accent)] text-white'
+                  : 'text-[var(--ngc-fg-muted)]')
+              }
             >
-              {f.label}
-            </option>
+              {LINE_KEYS[k].label}
+            </button>
           ))}
-        </select>
-      </Field>
+        </div>
 
-      <Field label={`글자 크기 · ${size}px`}>
-        <input
-          type="range"
-          min={SIZE_MIN}
-          max={SIZE_MAX}
-          step={2}
-          value={size}
-          onChange={(e) => onChange({ size: Number(e.target.value) })}
-          className="w-full"
-        />
-      </Field>
+        <div className="space-y-5">
+          <Field label="폰트">
+            <FontPicker value={line.font} onChange={(k) => setLineField('font', k)} />
+          </Field>
 
+          <Field label={`글자 크기 · ${line.size}px`}>
+            <input
+              type="range"
+              min={SIZE_MIN}
+              max={SIZE_MAX}
+              step={2}
+              value={line.size}
+              onChange={(e) => setLineField('size', Number(e.target.value))}
+              className="w-full"
+            />
+          </Field>
+
+          <ColorField
+            label="글자 색"
+            value={line.fg}
+            onChange={(v) => setLineField('fg', v)}
+          />
+        </div>
+      </div>
+
+      {/* Global typography that applies to every line. */}
       <div className="grid grid-cols-2 gap-4">
         <Field label={`자간 · ${letterSpacing.toFixed(2)}em`}>
           <input
@@ -147,10 +205,8 @@ export default function TweakPanel({ params, onChange, onReset }: Props) {
         </div>
       </Field>
 
-      <div className="grid grid-cols-2 gap-4">
-        <ColorField label="글자 색" value={fg} onChange={(v) => onChange({ fg: v })} />
-        <ColorField label="배경색" value={bg} onChange={(v) => onChange({ bg: v })} />
-      </div>
+      {/* Background color — global, not per-line. */}
+      <ColorField label="배경색" value={bg} onChange={(v) => onChange({ bg: v })} />
 
       {style === 'gradient' && (
         <div className="grid grid-cols-2 gap-4">

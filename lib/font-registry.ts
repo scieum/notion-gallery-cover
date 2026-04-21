@@ -191,18 +191,52 @@ export const FONT_REGISTRY: Record<string, FontDef> = {
       400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.1/Cafe24Danjunghae.woff',
     },
   },
+  hssummer: {
+    family: 'HsSummerWaterLight',
+    label: 'HS 여름물빛체',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/HSSummer.woff',
+    },
+  },
+  hakgyobunpil: {
+    family: 'SchoolSafetyChalk',
+    label: '학교안심 분필체',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2307-2@1.0/HakgyoansimBunpilR.woff2',
+    },
+  },
+  dovemayo: {
+    family: 'DoolgiMayoGothic',
+    label: '둘기마요 고딕',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302@1.1/Dovemayo_gothic.woff2',
+    },
+  },
+  jejudoldam: {
+    family: 'JejuStoneWall',
+    label: '제주 돌담체',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2210-EF@1.0/EF_jejudoldam.woff2',
+    },
+  },
   // Mona pixel font removed — server returns a 200 PNG but the image
   // turns out broken in browser (likely a satori/opentype pixel-font
   // glyph issue at our render sizes). Revisit if a clean Korean-capable
   // pixel font shows up.
 };
 
-/** UI helper — list of { key, label, family } for a <select>. */
-export const FONT_OPTIONS = Object.entries(FONT_REGISTRY).map(([key, def]) => ({
-  key,
-  label: def.label,
-  family: def.family,
-}));
+/**
+ * UI helper — list of { key, label, family } for the picker.
+ * Sorted by label using Korean locale collation, which puts ㄱ-ㅎ first
+ * then A-Z (so 한글 fonts cluster, English fonts follow naturally).
+ */
+export const FONT_OPTIONS = Object.entries(FONT_REGISTRY)
+  .map(([key, def]) => ({
+    key,
+    label: def.label,
+    family: def.family,
+  }))
+  .sort((a, b) => a.label.localeCompare(b.label, 'ko'));
 
 function urlFormat(u: string): string {
   if (u.endsWith('.woff2')) return 'woff2';
