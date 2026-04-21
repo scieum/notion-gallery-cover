@@ -116,3 +116,25 @@ export const FONT_OPTIONS = Object.entries(FONT_REGISTRY).map(([key, def]) => ({
   label: def.label,
   family: def.family,
 }));
+
+function urlFormat(u: string): string {
+  if (u.endsWith('.woff2')) return 'woff2';
+  if (u.endsWith('.woff')) return 'woff';
+  if (u.endsWith('.otf')) return 'opentype';
+  if (u.endsWith('.ttf')) return 'truetype';
+  return 'woff2';
+}
+
+/** CSS @font-face rules for all registered fonts — used to render the picker
+ * with each option in its own typeface. Emitted by `<FontFacesStyle />`. */
+export const FONT_FACE_CSS = Object.values(FONT_REGISTRY)
+  .map((def) =>
+    Object.entries(def.weights)
+      .map(
+        ([w, url]) =>
+          `@font-face{font-family:"${def.family}";font-style:normal;font-weight:${w};` +
+          `font-display:swap;src:url(${url}) format("${urlFormat(url)}");}`,
+      )
+      .join(''),
+  )
+  .join('');

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
 import type { CoverStyle, Design, PatternName } from '@/lib/types';
-import { DEFAULT_FONT_KEY, FONT_OPTIONS } from '@/lib/font-registry';
+import { DEFAULT_FONT_KEY, FONT_OPTIONS, FONT_REGISTRY } from '@/lib/font-registry';
 import CoverPreview from './CoverPreview';
 
 interface Props {
@@ -91,9 +91,14 @@ export default function DesignEditor({ open, onClose, onSave, sampleName, previe
                 className="ngc-input"
                 value={font}
                 onChange={(e) => setFont(e.target.value)}
+                style={{ fontFamily: `"${FONT_REGISTRY[font]?.family ?? 'Pretendard'}"` }}
               >
                 {FONT_OPTIONS.map((f) => (
-                  <option key={f.key} value={f.key}>
+                  <option
+                    key={f.key}
+                    value={f.key}
+                    style={{ fontFamily: `"${f.family}"`, fontSize: 16 }}
+                  >
                     {f.label}
                   </option>
                 ))}

@@ -6,6 +6,7 @@ import ConnectCard from '@/components/ConnectCard';
 import DatabasePicker from '@/components/DatabasePicker';
 import DesignGallery from '@/components/DesignGallery';
 import DesignEditor from '@/components/DesignEditor';
+import FontFacesStyle from '@/components/FontFacesStyle';
 import PageList from '@/components/PageList';
 import TweakPanel from '@/components/TweakPanel';
 import { BUILTIN_DESIGNS, findDesign } from '@/lib/designs';
@@ -315,6 +316,7 @@ export default function Page() {
 
   return (
     <main className="min-h-screen">
+      <FontFacesStyle />
       <header className="sticky top-0 z-10 backdrop-blur bg-white/80 border-b border-[var(--ngc-border)]">
         <div className="max-w-[1800px] mx-auto px-8 py-4 flex items-center justify-between">
           <button

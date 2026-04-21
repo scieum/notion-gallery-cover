@@ -1,6 +1,6 @@
 'use client';
 
-import { FONT_OPTIONS } from '@/lib/font-registry';
+import { FONT_OPTIONS, FONT_REGISTRY } from '@/lib/font-registry';
 import type { CoverParams } from '@/lib/types';
 
 /** Same as CoverParams sans `name`, which the apply step always injects. */
@@ -56,9 +56,14 @@ export default function TweakPanel({ params, onChange, onReset }: Props) {
           className="ngc-input"
           value={fontKey}
           onChange={(e) => onChange({ font: e.target.value })}
+          style={{ fontFamily: `"${FONT_REGISTRY[fontKey]?.family ?? 'Pretendard'}"` }}
         >
           {FONT_OPTIONS.map((f) => (
-            <option key={f.key} value={f.key}>
+            <option
+              key={f.key}
+              value={f.key}
+              style={{ fontFamily: `"${f.family}"`, fontSize: 16 }}
+            >
               {f.label}
             </option>
           ))}
