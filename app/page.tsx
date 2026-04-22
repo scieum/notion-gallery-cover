@@ -529,11 +529,36 @@ export default function Page() {
       />
 
       <footer className="border-t border-[var(--ngc-border)] mt-16">
-        <div className="max-w-[1800px] mx-auto px-8 py-6 ngc-caption text-center">
-          © 2026 𝐍𝐨𝐭𝐢𝐨𝐧𝐓𝐚𝐥𝐤. All rights reserved.
+        <div className="max-w-[1800px] mx-auto px-8 py-6 ngc-caption flex items-center justify-center gap-3">
+          <span>© 2026 𝐍𝐨𝐭𝐢𝐨𝐧𝐓𝐚𝐥𝐤. All rights reserved.</span>
+          <a
+            href="https://open.kakao.com/o/gpSvPKGg"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="노션하는 교사톡 오픈채팅방 참여"
+            aria-label="노션하는 교사톡 오픈채팅방 참여"
+            className="text-[var(--ngc-fg-faint)] hover:text-[var(--ngc-fg-muted)] transition-colors inline-flex"
+          >
+            <KakaoIcon />
+          </a>
         </div>
       </footer>
     </main>
+  );
+}
+
+/** Inline KakaoTalk speech-bubble glyph. Inherits color from parent (currentColor). */
+function KakaoIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M12 4C6.48 4 2 7.58 2 12c0 2.86 1.86 5.36 4.65 6.78l-.95 3.46c-.08.3.25.55.5.39l4.13-2.74c.55.06 1.11.11 1.67.11 5.52 0 10-3.58 10-8S17.52 4 12 4z" />
+    </svg>
   );
 }
 
