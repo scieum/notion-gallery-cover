@@ -53,7 +53,10 @@ export default function CoverPreview({
         key={sp.toString()}
         src={src}
         alt={name}
-        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+        // contain (not cover) so the whole rendered cover stays visible —
+        // sub-pixel aspect mismatches between container and image were
+        // clipping characters at the right edge with `cover`.
+        style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
       />
     </div>
   );
