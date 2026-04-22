@@ -22,6 +22,12 @@ export default function CoverPreview({
   className,
   ratio = 2.5,
 }: Props) {
+  // Derive w/h from `ratio` so the rendered cover matches the container's
+  // aspect exactly. Without this, design.params has no w/h and the cover
+  // route falls back to 1500x600 (2.5) — making 4:3 gallery thumbnails
+  // letterbox a wide image inside a tall container.
+  const previewW = 1200;
+  const previewH = Math.round(previewW / ratio);
   const params: CoverParams = useMemo(
     () => ({
       ...design.params,
@@ -29,8 +35,10 @@ export default function CoverPreview({
       subtitle,
       caption,
       style: design.params.style ?? 'solid',
+      w: previewW,
+      h: previewH,
     }),
-    [design, name, subtitle, caption],
+    [design, name, subtitle, caption, previewW, previewH],
   );
   const src = coverPath(params);
   const sp = coverSearchParams(params);
