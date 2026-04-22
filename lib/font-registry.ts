@@ -320,6 +320,50 @@ export const FONT_REGISTRY: Record<string, FontDef> = {
       800: 'https://fonts.gstatic.com/s/notosanskr/v39/PbyxFmXiEBPT4ITbgNA5Cgms3VYcOA-vvnIzzmo1SLPg9A.ttf',
     },
   },
+  coldywebtoon: {
+    family: 'KoldiWebtoonMakerOngleifFont',
+    label: '온글잎 콜디 웹툰메이커',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/2508-2@1.0/Ownglyph_Coldywebtoonmaker-Rg.woff2',
+    },
+  },
+  shinbi7: {
+    family: 'ShinbiIsSevenYearsOld',
+    label: '상상 신비는 일곱살',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_three@1.1/SangSangShinb7.woff',
+    },
+  },
+  goding: {
+    family: 'NotGothicButGoding',
+    label: '고딕 아니고 고딩',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/naverfont_05@1.0/Gothic_Goding.woff',
+    },
+  },
+  byeoljari: {
+    family: 'SchoolSafetyConstellation',
+    label: '학교안심 별자리',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/2408-5@1.0/HakgyoansimByeoljariTTF-L.woff2',
+      700: 'https://cdn.jsdelivr.net/gh/projectnoonnu/2408-5@1.0/HakgyoansimByeoljariTTF-B.woff2',
+    },
+  },
+  surround: {
+    family: 'Cafe24Surround',
+    label: 'Cafe24 써라운드',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2105_2@1.0/Cafe24Ssurround.woff',
+    },
+  },
+  nadeuri: {
+    family: 'SchoolSafeOuting',
+    label: '학교안심 나드리',
+    weights: {
+      400: 'https://cdn.jsdelivr.net/gh/projectnoonnu/2408-5@1.0/HakgyoansimNadeuriTTF-L.woff2',
+      700: 'https://cdn.jsdelivr.net/gh/projectnoonnu/2408-5@1.0/HakgyoansimNadeuriTTF-B.woff2',
+    },
+  },
   // Mona pixel font removed — server returns a 200 PNG but the image
   // turns out broken in browser (likely a satori/opentype pixel-font
   // glyph issue at our render sizes). Revisit if a clean Korean-capable
