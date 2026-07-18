@@ -8,8 +8,10 @@ import type { CoverParams, PatternName } from '@/lib/types';
 // Node runtime so we can use wawoff2 (loads a wasm decoder for WOFF2 fonts).
 export const runtime = 'nodejs';
 
-// Only 1..10 are valid preset keys — see public/covers/{n}.png.
-const BG_IMAGE_PRESETS = new Set(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']);
+// Only 1..47 are valid preset keys — see public/covers/{n}.png.
+const BG_IMAGE_PRESETS = new Set(
+  Array.from({ length: 47 }, (_, i) => String(i + 1)),
+);
 const bgImageDataCache = new Map<string, string>();
 function bgImageDataUri(key: string): string | null {
   if (!BG_IMAGE_PRESETS.has(key)) return null;
